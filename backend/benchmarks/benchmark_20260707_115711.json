@@ -1,0 +1,34 @@
+[
+    {
+        "nonce": 43647,
+        "hash": "0000f1cd91b6588617b4f5a2d5a23e34c8b89ccd0367aee4db793dec2da157ed",
+        "attempts": 43648,
+        "time": 0.04857089999859454,
+        "hashrate": 898645.073516509,
+        "strategy": "SequentialStrategy"
+    },
+    {
+        "nonce": 7278355,
+        "hash": "000046855b14d03f40eb5d5e89b0568a1c107774eb5f5123897057c505f6e434",
+        "attempts": 81351,
+        "time": 0.15742929999942135,
+        "hashrate": 516746.2473650014,
+        "strategy": "RandomStrategy"
+    },
+    {
+        "nonce": 70577,
+        "hash": "00001616cabc320acfbe77aa0284624b6b3f20b08076698f6dda4d84944e3bfc",
+        "attempts": 40591,
+        "time": 0.06649279999874125,
+        "hashrate": 610457.0720554468,
+        "strategy": "MultiThreadStrategy"
+    },
+    {
+        "nonce": 43647,
+        "hash": "0000f1cd91b6588617b4f5a2d5a23e34c8b89ccd0367aee4db793dec2da157ed",
+        "attempts": 10912,
+        "time": 2.846934199998941,
+        "hashrate": 3832.895048998343,
+        "strategy": "MultiProcessStrategy"
+    }
+]

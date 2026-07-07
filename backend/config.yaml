@@ -1,0 +1,14 @@
+project:
+  name: HashPilot
+
+puzzle:
+  data: HashPilot
+  difficulty: 5
+
+benchmark:
+  threads: 8
+  processes: 8
+
+output:
+  save_json: true
+  save_chart: true

@@ -1,46 +1,20 @@
-"""
-HashPilot
+from fastapi import FastAPI
 
-Main Entry Point
+from app.api.benchmark import router as benchmark_router
 
-Author: Raghavendra Pedada
-License: MIT
-"""
+app = FastAPI(
+    title="HashPilot API",
+    version="0.3.0",
+    description="AI-Powered Computational Puzzle & Benchmarking Platform",
+)
 
-from app.engine.pow_puzzle import ProofOfWorkPuzzle
-from app.engine.solver import Solver
-from app.strategies.sequential import SequentialStrategy
-
-
-def main():
-    puzzle = ProofOfWorkPuzzle(
-        data="HashPilot",
-        difficulty=4,
-    )
-
-    strategy = SequentialStrategy()
-    solver = Solver(strategy)
-
-    result = solver.solve(puzzle)
-
-    print("=" * 50)
-    print("             HashPilot v0.1")
-    print("=" * 50)
-    print(f"Puzzle      : Proof of Work")
-    print(f"Difficulty  : {puzzle.difficulty()}")
-    print(f"Strategy    : Sequential Search")
-    print()
-
-    print("✅ Solution Found")
-    print()
-
-    print(f"Nonce       : {result['nonce']}")
-    print(f"Hash        : {result['hash']}")
-    print(f"Attempts    : {result['attempts']}")
-    print(f"Time        : {result['time']:.4f} sec")
-    print(f"Hash Rate   : {result['hashrate']:.2f} H/s")
-    print("=" * 50)
+app.include_router(benchmark_router)
 
 
-if __name__ == "__main__":
-    main()
+@app.get("/")
+def root():
+    return {
+        "project": "HashPilot",
+        "status": "running",
+        "version": "0.3.0",
+    }

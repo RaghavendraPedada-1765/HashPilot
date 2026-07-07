@@ -1,3 +1,12 @@
+<p align="center">
+  <img src="assets/logo.png" width="220">
+</p>
+
+<h1 align="center">HashPilot</h1>
+
+<p align="center">
+AI-Powered Computational Puzzle & Benchmarking Platform
+</p>
 # 🚀 HashPilot
 
 > **An AI-Powered Computational Puzzle & Benchmarking Platform**

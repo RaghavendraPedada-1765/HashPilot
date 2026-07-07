@@ -15,15 +15,19 @@ HashPilot is a modular research platform for solving and benchmarking computatio
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔐 Proof-of-Work Puzzle Engine
-- ⚡ SHA-256 Hash Utilities
-- 🧠 Modular Strategy Framework
-- 📊 Performance Benchmarking
-- 🔌 Plugin-Based Architecture
-- 📈 Real-Time Metrics
-- 🤖 AI Optimization (Planned)
+- ✅ Proof-of-Work Puzzle Engine
+- ✅ Sequential Strategy
+- ✅ Random Strategy
+- ✅ MultiThread Strategy
+- ✅ MultiProcess Strategy
+- ✅ Benchmark Engine
+- ✅ FastAPI REST API
+- ✅ Interactive Swagger UI
+- ✅ YAML Configuration
+- ✅ JSON Benchmark Export
+- ✅ Benchmark Chart Generation
 
 ---
 

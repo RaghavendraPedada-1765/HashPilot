@@ -3,7 +3,9 @@
 # ==========================
 __pycache__/
 *.py[cod]
-*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Virtual Environments
 .venv/
@@ -46,3 +48,6 @@ node_modules/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# SQLite databases
+*.db

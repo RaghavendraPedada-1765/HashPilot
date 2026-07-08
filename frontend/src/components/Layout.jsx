@@ -7,8 +7,8 @@ function Layout({ children }) {
       style={{
         display: "flex",
         minHeight: "100vh",
-        background: "#0f172a",
-        color: "white",
+        background: "var(--bg-base)",
+        color: "var(--text-body)",
       }}
     >
       <Sidebar />
@@ -18,6 +18,8 @@ function Layout({ children }) {
           flex: 1,
           display: "flex",
           flexDirection: "column",
+          minWidth: 0,
+          overflow: "hidden",
         }}
       >
         <Navbar />
@@ -25,10 +27,8 @@ function Layout({ children }) {
         <main
           style={{
             flex: 1,
-            padding: "35px",
-            maxWidth: "1600px",
-            width: "100%",
-            margin: "0 auto",
+            overflowY: "auto",
+            padding: "32px 36px",
           }}
         >
           {children}

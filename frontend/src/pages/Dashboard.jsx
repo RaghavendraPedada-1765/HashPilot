@@ -12,12 +12,7 @@ import PerformanceChart from "../components/PerformanceChart";
 import BenchmarkTable from "../components/BenchmarkTable";
 import StatCard from "../components/StatCard";
 
-import {
-  FaTrophy,
-  FaBolt,
-  FaClock,
-  FaHashtag,
-} from "react-icons/fa";
+import { Trophy, Zap, Clock, Hash } from "lucide-react";
 
 export default function Dashboard() {
 
@@ -39,226 +34,121 @@ export default function Dashboard() {
   }, []);
 
   async function loadSystemInfo() {
-
     try {
-
       const response = await api.get("/system");
-
       setSystemInfo(response.data);
-
-    }
-
-    catch (error) {
-
+    } catch (error) {
       console.error("System Info Error:", error);
-
     }
-
   }
 
   async function runBenchmark() {
 
     setLoading(true);
-
     setProgress(0);
-
     setStage(0);
 
     const interval = setInterval(() => {
-
       setProgress((prev) => {
-
         if (prev >= 90) return prev;
-
         const next = prev + 5;
-
-        if (next < 25)
-          setStage(0);
-        else if (next < 50)
-          setStage(1);
-        else if (next < 75)
-          setStage(2);
-        else
-          setStage(3);
-
+        if (next < 25)      setStage(0);
+        else if (next < 50) setStage(1);
+        else if (next < 75) setStage(2);
+        else                setStage(3);
         return next;
-
       });
-
     }, 200);
 
     try {
-
       const response = await api.get("/benchmark", {
-
-        params: {
-
-          difficulty,
-
-          threads,
-
-          processes,
-
-        },
-
+        params: { difficulty, threads, processes },
       });
 
       setResults(response.data.results);
-
       setAnalysis(response.data.analysis);
 
       clearInterval(interval);
-
       setProgress(100);
-
       setStage(4);
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
       clearInterval(interval);
-
       console.error(error);
-
       alert("Benchmark failed.");
-
-    }
-
-    finally {
-
+    } finally {
       setTimeout(() => {
-
         setLoading(false);
-
       }, 500);
-
     }
-
   }
 
   const winner =
     results.length > 0
-      ? results.reduce((a, b) =>
-        a.hashrate > b.hashrate ? a : b
-      )
+      ? results.reduce((a, b) => (a.hashrate > b.hashrate ? a : b))
       : null;
 
   return (
-
     <Layout>
 
       <Hero />
 
-      <AIRecommendation
-        analysis={analysis}
-      />
+      <AIRecommendation analysis={analysis} />
 
-      <SystemInfo
-        info={systemInfo}
-      />
+      <SystemInfo info={systemInfo} />
 
-      <ProgressPanel
-        loading={loading}
-        progress={progress}
-        stage={stage}
-      />
+      <ProgressPanel loading={loading} progress={progress} stage={stage} />
 
       <ControlPanel
-
         difficulty={difficulty}
         setDifficulty={setDifficulty}
-
         threads={threads}
         setThreads={setThreads}
-
         processes={processes}
         setProcesses={setProcesses}
-
         loading={loading}
-
         onRun={runBenchmark}
-
       />
 
-      {
+      {winner && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-7">
+          <StatCard
+            title="Winner"
+            value={winner.strategy}
+            icon={<Trophy size={20} />}
+            color="#10b981"
+            delay={0}
+          />
+          <StatCard
+            title="Hash Rate"
+            value={`${Math.round(winner.hashrate).toLocaleString()} H/s`}
+            icon={<Zap size={20} />}
+            color="#6366f1"
+            delay={0.08}
+          />
+          <StatCard
+            title="Attempts"
+            value={winner.attempts.toLocaleString()}
+            icon={<Hash size={20} />}
+            color="#f59e0b"
+            delay={0.16}
+          />
+          <StatCard
+            title="Runtime"
+            value={`${winner.time.toFixed(4)} s`}
+            icon={<Clock size={20} />}
+            color="#8b5cf6"
+            delay={0.24}
+          />
+        </div>
+      )}
 
-        winner && (
-
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-12 mb-12"
-          >
-
-            <StatCard
-
-              title="Winner"
-
-              value={winner.strategy}
-
-              icon={<FaTrophy />}
-
-              color="#16a34a"
-
-            />
-
-            <StatCard
-
-              title="Hash Rate"
-
-              value={`${Math.round(
-                winner.hashrate
-              ).toLocaleString()} H/s`}
-
-              icon={<FaBolt />}
-
-              color="#2563eb"
-
-            />
-
-            <StatCard
-
-              title="Attempts"
-
-              value={winner.attempts.toLocaleString()}
-
-              icon={<FaHashtag />}
-
-              color="#ea580c"
-
-            />
-
-            <StatCard
-
-              title="Runtime"
-
-              value={`${winner.time.toFixed(4)} s`}
-
-              icon={<FaClock />}
-
-              color="#7c3aed"
-
-            />
-
-          </div>
-
-        )
-
-      }
-
-      <div className="mx-12 mb-12">
-
-        <PerformanceChart
-          results={results}
-        />
-
+      <div style={{ marginBottom: "28px" }}>
+        <PerformanceChart results={results} />
       </div>
 
-      <BenchmarkTable
-        results={results}
-      />
+      <BenchmarkTable results={results} />
 
     </Layout>
-
   );
-
 }

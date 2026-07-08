@@ -4,39 +4,58 @@ export default function StatCard({
   title,
   value,
   icon,
-  color = "#2563eb",
+  color = "#6366f1",
+  delay = 0,
 }) {
   return (
     <motion.div
-      whileHover={{
-        y: -8,
-        scale: 1.03,
-      }}
-      transition={{
-        duration: 0.25,
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: "easeOut" }}
+      whileHover={{ y: -6, boxShadow: `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.09)` }}
       style={{
-        background: "linear-gradient(145deg,#1e293b,#0f172a)",
+        background: "var(--bg-glass)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
         borderRadius: "18px",
-        padding: "28px",
-        border: "1px solid #334155",
-        boxShadow: "0 15px 35px rgba(0,0,0,.30)",
+        padding: "24px",
+        border: "1px solid var(--border)",
+        boxShadow: "var(--shadow-md)",
         overflow: "hidden",
         position: "relative",
+        cursor: "default",
+        transition: "border-color 0.2s",
       }}
     >
-      {/* Decorative Glow */}
+      {/* Top glow orb */}
       <div
         style={{
           position: "absolute",
-          right: "-30px",
-          top: "-30px",
-          width: "90px",
-          height: "90px",
+          right: "-20px",
+          top: "-20px",
+          width: "100px",
+          height: "100px",
           borderRadius: "50%",
           background: color,
-          opacity: 0.18,
-          filter: "blur(20px)",
+          opacity: 0.12,
+          filter: "blur(28px)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Bottom left subtle glow */}
+      <div
+        style={{
+          position: "absolute",
+          left: "-10px",
+          bottom: "-10px",
+          width: "60px",
+          height: "60px",
+          borderRadius: "50%",
+          background: color,
+          opacity: 0.06,
+          filter: "blur(18px)",
+          pointerEvents: "none",
         }}
       />
 
@@ -44,16 +63,20 @@ export default function StatCard({
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "flex-start",
+          position: "relative",
+          zIndex: 1,
         }}
       >
-        <div>
+        {/* Text */}
+        <div style={{ flex: 1, minWidth: 0, paddingRight: "12px" }}>
           <p
             style={{
-              color: "#94a3b8",
+              color: "var(--text-muted)",
               margin: 0,
-              fontSize: "14px",
-              letterSpacing: "1px",
+              fontSize: "11px",
+              fontWeight: 700,
+              letterSpacing: "0.9px",
               textTransform: "uppercase",
             }}
           >
@@ -62,10 +85,13 @@ export default function StatCard({
 
           <h2
             style={{
-              marginTop: "14px",
+              marginTop: "10px",
               marginBottom: 0,
-              fontSize: "30px",
-              color: "white",
+              fontSize: String(value).length > 14 ? "15px" : "26px",
+              fontWeight: 800,
+              color: "var(--text-heading)",
+              letterSpacing: String(value).length > 14 ? "-0.2px" : "-0.5px",
+              lineHeight: 1.25,
               wordBreak: "break-word",
             }}
           >
@@ -73,19 +99,22 @@ export default function StatCard({
           </h2>
         </div>
 
+        {/* Icon box */}
         {icon && (
           <div
             style={{
-              width: "70px",
-              height: "70px",
-              borderRadius: "18px",
-              background: color,
+              width: "48px",
+              height: "48px",
+              borderRadius: "13px",
+              background: `${color}22`,
+              border: `1px solid ${color}44`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "30px",
-              color: "white",
-              boxShadow: `0 10px 25px ${color}55`,
+              fontSize: "22px",
+              color: color,
+              flexShrink: 0,
+              boxShadow: `0 4px 16px ${color}30`,
             }}
           >
             {icon}

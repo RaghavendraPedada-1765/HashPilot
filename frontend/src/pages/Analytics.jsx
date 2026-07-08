@@ -2,14 +2,42 @@ import { useEffect, useState } from "react";
 
 import api from "../api/api";
 
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Layout from "../components/Layout";
 import StatCard from "../components/StatCard";
-import PerformanceChart from "../components/PerformanceChart";
+
+import {
+  FaChartLine,
+  FaBolt,
+  FaTrophy,
+  FaMedal,
+} from "react-icons/fa";
+
+import {
+  Bar
+} from "react-chartjs-2";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend
+);
 
 export default function Analytics() {
 
   const [analytics, setAnalytics] = useState(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
 
@@ -21,103 +49,128 @@ export default function Analytics() {
 
     try {
 
-      const response = await api.get("/analytics/");
+      const response = await api.get("/analytics");
 
       setAnalytics(response.data);
 
     }
 
-    catch (error) {
+    catch (err) {
 
-      console.error(error);
+      console.error(err);
+
+      alert("Failed to load analytics.");
+
+    }
+
+    finally {
+
+      setLoading(false);
 
     }
 
   }
 
-  if (!analytics) {
+  if (loading) {
 
     return (
 
-      <div className="min-h-screen bg-slate-900 text-white">
+      <Layout>
 
-        <Navbar />
+        <h2>Loading Analytics...</h2>
 
-        <div className="text-center mt-20 text-xl">
-
-          Loading Analytics...
-
-        </div>
-
-      </div>
+      </Layout>
 
     );
 
   }
 
+  const chartData = {
+
+    labels: analytics.strategies.map(item =>
+      item.strategy.replace("Strategy", "")
+    ),
+
+    datasets: [
+
+      {
+
+        label: "Average Hash Rate",
+
+        data: analytics.strategies.map(item =>
+          item.average_hashrate
+        ),
+
+        backgroundColor: "#06b6d4",
+
+        borderRadius: 8,
+
+      }
+
+    ]
+
+  };
+
   return (
 
-    <div className="min-h-screen bg-slate-900 text-white">
+    <Layout>
 
-      <Navbar />
+      <h1
+        style={{
+          fontSize: "42px",
+          marginBottom: "35px",
+        }}
+      >
+        📊 Analytics Dashboard
+      </h1>
 
-      <div className="mx-12 mt-10">
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+      >
 
-        <h1 className="text-4xl font-bold mb-8">
+        <StatCard
+          title="Total Runs"
+          value={analytics.total_runs}
+          icon={<FaChartLine />}
+          color="#1E3A8A"
+        />
 
-          Analytics
+        <StatCard
+          title="Winning Runs"
+          value={analytics.total_winners}
+          icon={<FaMedal />}
+          color="#166534"
+        />
 
-        </h1>
+        <StatCard
+          title="Average Hash Rate"
+          value={`${Math.round(
+            analytics.average_hashrate
+          ).toLocaleString()} H/s`}
+          icon={<FaBolt />}
+          color="#7C2D12"
+        />
 
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
-
-          <StatCard
-
-            title="Total Runs"
-
-            value={analytics.total_runs}
-
-          />
-
-          <StatCard
-
-            title="Best Strategy"
-
-            value={analytics.best_strategy}
-
-            color="bg-green-700"
-
-          />
-
-          <StatCard
-
-            title="Average Hash Rate"
-
-            value={`${Math.round(
-              analytics.average_hashrate
-            ).toLocaleString()} H/s`}
-
-          />
-
-        </div>
-
-        <PerformanceChart
-
-          results={analytics.strategies.map(strategy => ({
-
-            strategy: strategy.strategy,
-
-            hashrate: strategy.average_hashrate,
-
-          }))}
-
+        <StatCard
+          title="Best Strategy"
+          value={analytics.best_strategy}
+          icon={<FaTrophy />}
+          color="#4338CA"
         />
 
       </div>
 
-      <Footer />
+      <div
+        className="bg-slate-800 rounded-xl p-8 shadow-xl"
+      >
 
-    </div>
+        <Bar
+          data={chartData}
+        />
+
+      </div>
+
+    </Layout>
 
   );
 

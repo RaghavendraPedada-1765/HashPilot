@@ -1,51 +1,97 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import api from "../api/api";
 
-import Navbar from "../components/Navbar";
+import Layout from "../components/Layout";
 import Hero from "../components/Hero";
+import AIRecommendation from "../components/AIRecommendation";
+import SystemInfo from "../components/SystemInfo";
+import ProgressPanel from "../components/ProgressPanel";
 import ControlPanel from "../components/ControlPanel";
-import StatCard from "../components/StatCard";
 import PerformanceChart from "../components/PerformanceChart";
 import BenchmarkTable from "../components/BenchmarkTable";
-import Footer from "../components/Footer";
+import StatCard from "../components/StatCard";
+
+import {
+  FaTrophy,
+  FaBolt,
+  FaClock,
+  FaHashtag,
+} from "react-icons/fa";
 
 export default function Dashboard() {
-
-  const [results, setResults] = useState([]);
-  const [history, setHistory] = useState([]);
-
-  const [loading, setLoading] = useState(false);
 
   const [difficulty, setDifficulty] = useState(4);
   const [threads, setThreads] = useState(4);
   const [processes, setProcesses] = useState(4);
 
-  async function runBenchmark() {
+  const [loading, setLoading] = useState(false);
+
+  const [results, setResults] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const [systemInfo, setSystemInfo] = useState(null);
+
+  const [progress, setProgress] = useState(0);
+  const [stage, setStage] = useState(0);
+
+  useEffect(() => {
+    loadSystemInfo();
+  }, []);
+
+  async function loadSystemInfo() {
 
     try {
 
-      setLoading(true);
+      const response = await api.get("/system");
+
+      setSystemInfo(response.data);
+
+    }
+
+    catch (error) {
+
+      console.error("System Info Error:", error);
+
+    }
+
+  }
+
+  async function runBenchmark() {
+
+    setLoading(true);
+
+    setProgress(0);
+
+    setStage(0);
+
+    const interval = setInterval(() => {
+
+      setProgress((prev) => {
+
+        if (prev >= 90) return prev;
+
+        const next = prev + 5;
+
+        if (next < 25)
+          setStage(0);
+        else if (next < 50)
+          setStage(1);
+        else if (next < 75)
+          setStage(2);
+        else
+          setStage(3);
+
+        return next;
+
+      });
+
+    }, 200);
+
+    try {
 
       const response = await api.get("/benchmark", {
 
         params: {
-
-          difficulty,
-          threads,
-          processes
-
-        }
-
-      });
-
-      setResults(response.data);
-
-      setHistory(previous => [
-
-        {
-
-          timestamp: new Date().toLocaleTimeString(),
 
           difficulty,
 
@@ -53,47 +99,70 @@ export default function Dashboard() {
 
           processes,
 
-          results: response.data
-
         },
 
-        ...previous
+      });
 
-      ]);
+      setResults(response.data.results);
+
+      setAnalysis(response.data.analysis);
+
+      clearInterval(interval);
+
+      setProgress(100);
+
+      setStage(4);
 
     }
 
     catch (error) {
 
+      clearInterval(interval);
+
       console.error(error);
+
+      alert("Benchmark failed.");
 
     }
 
     finally {
 
-      setLoading(false);
+      setTimeout(() => {
+
+        setLoading(false);
+
+      }, 500);
 
     }
 
   }
 
-  let winner = null;
-
-  if (results.length > 0) {
-
-    winner = results.reduce((best, current) =>
-      current.hashrate > best.hashrate ? current : best
-    );
-
-  }
+  const winner =
+    results.length > 0
+      ? results.reduce((a, b) =>
+        a.hashrate > b.hashrate ? a : b
+      )
+      : null;
 
   return (
 
-    <div className="min-h-screen bg-slate-900 text-white">
-
-      <Navbar />
+    <Layout>
 
       <Hero />
+
+      <AIRecommendation
+        analysis={analysis}
+      />
+
+      <SystemInfo
+        info={systemInfo}
+      />
+
+      <ProgressPanel
+        loading={loading}
+        progress={progress}
+        stage={stage}
+      />
 
       <ControlPanel
 
@@ -106,161 +175,89 @@ export default function Dashboard() {
         processes={processes}
         setProcesses={setProcesses}
 
-        onRun={runBenchmark}
-
         loading={loading}
+
+        onRun={runBenchmark}
 
       />
 
       {
 
-        winner &&
+        winner && (
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-12 mb-12">
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-12 mb-12"
+          >
 
-          <StatCard
+            <StatCard
 
-            title="Winner"
+              title="Winner"
 
-            value={winner.strategy}
+              value={winner.strategy}
 
-            color="bg-green-700"
+              icon={<FaTrophy />}
 
-          />
+              color="#16a34a"
 
-          <StatCard
+            />
 
-            title="Hash Rate"
+            <StatCard
 
-            value={`${winner.hashrate.toFixed(0)} H/s`}
+              title="Hash Rate"
 
-          />
+              value={`${Math.round(
+                winner.hashrate
+              ).toLocaleString()} H/s`}
 
-          <StatCard
+              icon={<FaBolt />}
 
-            title="Attempts"
+              color="#2563eb"
 
-            value={winner.attempts.toLocaleString()}
+            />
 
-          />
+            <StatCard
 
-          <StatCard
+              title="Attempts"
 
-            title="Time"
+              value={winner.attempts.toLocaleString()}
 
-            value={`${winner.time.toFixed(4)} s`}
+              icon={<FaHashtag />}
 
-          />
+              color="#ea580c"
 
-        </div>
+            />
+
+            <StatCard
+
+              title="Runtime"
+
+              value={`${winner.time.toFixed(4)} s`}
+
+              icon={<FaClock />}
+
+              color="#7c3aed"
+
+            />
+
+          </div>
+
+        )
 
       }
 
-      <PerformanceChart results={results} />
+      <div className="mx-12 mb-12">
 
-      <BenchmarkTable results={results} />
-
-      {/* History */}
-
-      <div className="mx-12 mb-16">
-
-        <h2 className="text-3xl font-bold mb-6">
-
-          Benchmark History
-
-        </h2>
-
-        {
-
-          history.length === 0
-
-            ?
-
-            <div className="bg-slate-800 rounded-xl p-6 text-slate-400">
-
-              No benchmark history yet.
-
-            </div>
-
-            :
-
-            history.map((run, index) => {
-
-              const best = run.results.reduce(
-
-                (a, b) =>
-
-                  a.hashrate > b.hashrate
-
-                    ? a
-
-                    : b
-
-              );
-
-              return (
-
-                <div
-
-                  key={index}
-
-                  className="bg-slate-800 rounded-xl p-5 mb-4"
-
-                >
-
-                  <div className="flex justify-between">
-
-                    <strong>
-
-                      Run #{history.length - index}
-
-                    </strong>
-
-                    <span>
-
-                      {run.timestamp}
-
-                    </span>
-
-                  </div>
-
-                  <p>
-
-                    Difficulty: {run.difficulty}
-
-                  </p>
-
-                  <p>
-
-                    Threads: {run.threads}
-
-                  </p>
-
-                  <p>
-
-                    Processes: {run.processes}
-
-                  </p>
-
-                  <p className="text-green-400">
-
-                    Winner: {best.strategy}
-
-                  </p>
-
-                </div>
-
-              );
-
-            })
-
-        }
+        <PerformanceChart
+          results={results}
+        />
 
       </div>
 
-      <Footer />
+      <BenchmarkTable
+        results={results}
+      />
 
-    </div>
+    </Layout>
 
   );
 

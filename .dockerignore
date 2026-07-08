@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+*.db
+
+node_modules
+
+.git
+.github
+
+.pytest_cache
+
+benchmarks

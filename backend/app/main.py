@@ -10,6 +10,10 @@ from app.database.db import engine
 
 import app.models.benchmark_model
 
+from app.api.websocket import router as websocket_router
+from app.api.system import router as system_router
+
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -39,7 +43,8 @@ app.add_middleware(
 app.include_router(benchmark_router)
 app.include_router(history_router)
 app.include_router(analytics_router)
-
+app.include_router(websocket_router)
+app.include_router(system_router)
 
 @app.get("/")
 def root():

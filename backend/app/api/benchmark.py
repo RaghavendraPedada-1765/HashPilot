@@ -5,6 +5,7 @@ HashPilot Benchmark API
 from fastapi import APIRouter
 
 from app.services.benchmark_service import BenchmarkService
+from app.services.ai_service import AIService
 
 router = APIRouter(
     prefix="/benchmark",
@@ -21,8 +22,22 @@ def run_benchmark(
     processes: int = 4,
 ):
 
-    return service.run(
+    results = service.run(
+
         difficulty=difficulty,
+
         threads=threads,
+
         processes=processes,
+
     )
+
+    analysis = AIService.analyze(results)
+
+    return {
+
+        "results": results,
+
+        "analysis": analysis,
+
+    }

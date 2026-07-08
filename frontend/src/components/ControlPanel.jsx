@@ -1,4 +1,10 @@
 import { motion } from "framer-motion";
+import {
+  FaSlidersH,
+  FaMicrochip,
+  FaLayerGroup,
+  FaPlay,
+} from "react-icons/fa";
 
 export default function ControlPanel({
   difficulty,
@@ -11,106 +17,183 @@ export default function ControlPanel({
   loading,
 }) {
   return (
-    <div className="bg-slate-800 rounded-xl shadow-xl mx-12 mb-10 p-8">
+    <div
+      style={{
+        background: "#111827",
+        borderRadius: "20px",
+        padding: "30px",
+        marginBottom: "35px",
+        boxShadow: "0 15px 35px rgba(0,0,0,.35)",
+        border: "1px solid #334155",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "25px",
+        }}
+      >
+        <FaSlidersH color="#38bdf8" size={26} />
 
-      <h2 className="text-2xl font-bold mb-6">
-        Benchmark Configuration
-      </h2>
+        <h2
+          style={{
+            margin: 0,
+            color: "white",
+          }}
+        >
+          Benchmark Configuration
+        </h2>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+          gap: "20px",
+        }}
+      >
+        {/* Difficulty */}
 
         <div>
-          <label className="block mb-2 font-semibold">
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "10px",
+              color: "#cbd5e1",
+              fontWeight: 600,
+            }}
+          >
+            <FaLayerGroup color="#06b6d4" />
             Difficulty
           </label>
 
           <select
             value={difficulty}
-            onChange={(e) => setDifficulty(Number(e.target.value))}
-            className="w-full rounded-lg bg-slate-700 p-3"
+            onChange={(e) =>
+              setDifficulty(Number(e.target.value))
+            }
+            style={selectStyle}
           >
-            {[1, 2, 3, 4, 5, 6, 7].map(value => (
-              <option key={value} value={value}>
-                {value}
-              </option>
+            {[1, 2, 3, 4, 5, 6, 7].map((v) => (
+              <option key={v}>{v}</option>
             ))}
           </select>
         </div>
 
+        {/* Threads */}
+
         <div>
-          <label className="block mb-2 font-semibold">
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "10px",
+              color: "#cbd5e1",
+              fontWeight: 600,
+            }}
+          >
+            <FaMicrochip color="#22c55e" />
             Threads
           </label>
 
           <select
             value={threads}
-            onChange={(e) => setThreads(Number(e.target.value))}
-            className="w-full rounded-lg bg-slate-700 p-3"
+            onChange={(e) =>
+              setThreads(Number(e.target.value))
+            }
+            style={selectStyle}
           >
-            {[1, 2, 4, 8, 12, 16].map(value => (
-              <option key={value} value={value}>
-                {value}
-              </option>
+            {[1, 2, 4, 8, 12, 16].map((v) => (
+              <option key={v}>{v}</option>
             ))}
           </select>
         </div>
 
+        {/* Processes */}
+
         <div>
-          <label className="block mb-2 font-semibold">
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "10px",
+              color: "#cbd5e1",
+              fontWeight: 600,
+            }}
+          >
+            <FaMicrochip color="#f97316" />
             Processes
           </label>
 
           <select
             value={processes}
-            onChange={(e) => setProcesses(Number(e.target.value))}
-            className="w-full rounded-lg bg-slate-700 p-3"
+            onChange={(e) =>
+              setProcesses(Number(e.target.value))
+            }
+            style={selectStyle}
           >
-            {[1, 2, 4, 8].map(value => (
-              <option key={value} value={value}>
-                {value}
-              </option>
+            {[1, 2, 4, 8].map((v) => (
+              <option key={v}>{v}</option>
             ))}
           </select>
         </div>
-
       </div>
 
-      <div className="flex justify-center mt-8">
-
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "35px",
+        }}
+      >
         <motion.button
-
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-
-          onClick={onRun}
-
+          whileHover={{
+            scale: 1.05,
+          }}
+          whileTap={{
+            scale: 0.95,
+          }}
           disabled={loading}
-
-          className={`
-                        px-8
-                        py-4
-                        rounded-xl
-                        text-lg
-                        font-semibold
-                        transition
-
-                        ${loading
-              ? "bg-slate-600 cursor-not-allowed"
-              : "bg-cyan-500 hover:bg-cyan-400"
-            }
-                    `}
+          onClick={onRun}
+          style={{
+            background: loading
+              ? "#475569"
+              : "linear-gradient(90deg,#2563eb,#06b6d4)",
+            color: "white",
+            border: "none",
+            borderRadius: "14px",
+            padding: "16px 40px",
+            fontSize: "18px",
+            fontWeight: "bold",
+            cursor: loading ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            boxShadow: "0 10px 25px rgba(37,99,235,.4)",
+          }}
         >
+          <FaPlay />
 
-          {
-            loading
-              ? "⏳ Running..."
-              : "▶ Run Benchmark"
-          }
-
+          {loading ? "Running Benchmark..." : "Run Benchmark"}
         </motion.button>
-
       </div>
-
     </div>
   );
 }
+
+const selectStyle = {
+  width: "100%",
+  padding: "14px",
+  borderRadius: "12px",
+  border: "1px solid #334155",
+  background: "#1e293b",
+  color: "white",
+  fontSize: "16px",
+  outline: "none",
+};

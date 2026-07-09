@@ -12,6 +12,7 @@ import app.models.benchmark_model
 
 from app.api.websocket import router as websocket_router
 from app.api.system import router as system_router
+from app.api.report import router as report_router
 
 
 Base.metadata.create_all(bind=engine)
@@ -45,6 +46,7 @@ app.include_router(history_router)
 app.include_router(analytics_router)
 app.include_router(websocket_router)
 app.include_router(system_router)
+app.include_router(report_router)
 
 @app.get("/")
 def root():

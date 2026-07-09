@@ -8,14 +8,25 @@ router = APIRouter()
 @router.websocket("/ws/benchmark")
 async def websocket_endpoint(websocket: WebSocket):
 
+    print("🔥 WebSocket connection requested")
+
     await manager.connect(websocket)
 
+    print("✅ Client connected")
+
     try:
-
         while True:
+            message = await websocket.receive_text()
 
-            await websocket.receive_text()
+            print("Received:", message)
+
+            await websocket.send_json({
+                "message": "Connected",
+                "received": message,
+            })
 
     except WebSocketDisconnect:
+
+        print("❌ Client disconnected")
 
         manager.disconnect(websocket)

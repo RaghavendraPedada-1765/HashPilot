@@ -11,6 +11,8 @@ import ControlPanel from "../components/ControlPanel";
 import PerformanceChart from "../components/PerformanceChart";
 import BenchmarkTable from "../components/BenchmarkTable";
 import StatCard from "../components/StatCard";
+import DownloadReportButton from "../components/DownloadReportButton";
+import LiveBenchmark from "../components/LiveBenchmark";
 
 import { Trophy, Zap, Clock, Hash } from "lucide-react";
 
@@ -47,33 +49,21 @@ export default function Dashboard() {
     setLoading(true);
     setProgress(0);
     setStage(0);
-
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) return prev;
-        const next = prev + 5;
-        if (next < 25)      setStage(0);
-        else if (next < 50) setStage(1);
-        else if (next < 75) setStage(2);
-        else                setStage(3);
-        return next;
-      });
-    }, 200);
+    setResults([]);
 
     try {
       const response = await api.get("/benchmark", {
         params: { difficulty, threads, processes },
       });
 
+      // The final response acts as a fallback, but we rely on WS for live data
       setResults(response.data.results);
       setAnalysis(response.data.analysis);
 
-      clearInterval(interval);
       setProgress(100);
       setStage(4);
 
     } catch (error) {
-      clearInterval(interval);
       console.error(error);
       alert("Benchmark failed.");
     } finally {
@@ -83,9 +73,33 @@ export default function Dashboard() {
     }
   }
 
+  const handleWSEvent = (data) => {
+    if (data.event === "strategy_started") {
+      setProgress(data.progress);
+      setStage(data.current - 1);
+      setResults(prev => {
+        const filtered = prev.filter(r => r.strategy !== data.strategy);
+        return [...filtered, { strategy: data.strategy, hashrate: 0, attempts: 0, time: 0 }];
+      });
+    } else if (data.event === "progress") {
+      setResults(prev => prev.map(r => 
+        r.strategy === data.strategy 
+          ? { ...r, hashrate: data.hashrate, attempts: data.attempts, time: data.elapsed } 
+          : r
+      ));
+    } else if (data.event === "strategy_completed") {
+      setProgress(data.progress);
+      setStage(data.current);
+      setResults(prev => {
+        const filtered = prev.filter(r => r.strategy !== data.strategy);
+        return [...filtered, data.result];
+      });
+    }
+  };
+
   const winner =
     results.length > 0
-      ? results.reduce((a, b) => (a.hashrate > b.hashrate ? a : b))
+      ? results.reduce((a, b) => (a.hashrate > b.hashrate ? a : b), results[0])
       : null;
 
   return (
@@ -97,8 +111,13 @@ export default function Dashboard() {
 
       <SystemInfo info={systemInfo} />
 
-      <ProgressPanel loading={loading} progress={progress} stage={stage} />
+      <LiveBenchmark onEvent={handleWSEvent} />
 
+      <ProgressPanel
+        loading={loading}
+        progress={progress}
+        stage={stage}
+      />
       <ControlPanel
         difficulty={difficulty}
         setDifficulty={setDifficulty}
@@ -109,6 +128,25 @@ export default function Dashboard() {
         loading={loading}
         onRun={runBenchmark}
       />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "30px",
+        }}
+      >
+
+        <DownloadReportButton
+
+          difficulty={difficulty}
+
+          threads={threads}
+
+          processes={processes}
+
+        />
+
+      </div>
 
       {winner && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-7">

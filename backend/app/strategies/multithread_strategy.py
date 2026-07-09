@@ -5,6 +5,7 @@ Multi-threaded Search Strategy
 """
 
 import threading
+import time
 from app.utils.hashing import sha256
 from app.strategies.base_strategy import Strategy
 
@@ -14,7 +15,7 @@ class MultiThreadStrategy(Strategy):
     def __init__(self, threads=4):
         self.threads = threads
 
-    def solve(self, puzzle):
+    def solve(self, puzzle, progress_callback=None):
 
         found = threading.Event()
 
@@ -25,19 +26,36 @@ class MultiThreadStrategy(Strategy):
         }
 
         lock = threading.Lock()
+        start_time = time.perf_counter()
 
         def worker(start):
 
             nonce = start
+            local_attempts = 0
 
             while not found.is_set():
 
                 candidate = f"{puzzle.data}{nonce}"
 
                 hash_value = sha256(candidate)
+                local_attempts += 1
 
-                with lock:
-                    result["attempts"] += 1
+                if local_attempts % 1000 == 0:
+                    with lock:
+                        result["attempts"] += 1000
+                        current_total = result["attempts"]
+                    
+                    if progress_callback and current_total % 10000 == 0:
+                        elapsed = time.perf_counter() - start_time
+                        hashrate = current_total / elapsed if elapsed > 0 else 0
+                        progress_callback({
+                            "event": "progress",
+                            "strategy": "MultiThreadStrategy",
+                            "attempts": current_total,
+                            "nonce": nonce,
+                            "hashrate": round(hashrate, 2),
+                            "elapsed": round(elapsed, 3),
+                        })
 
                 if hash_value.startswith("0" * puzzle.difficulty()):
 
@@ -45,6 +63,8 @@ class MultiThreadStrategy(Strategy):
 
                         if not found.is_set():
 
+                            # Add remaining local attempts
+                            result["attempts"] += (local_attempts % 1000)
                             result["nonce"] = nonce
                             result["hash"] = hash_value
 

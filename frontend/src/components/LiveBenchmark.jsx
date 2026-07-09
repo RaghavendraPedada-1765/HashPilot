@@ -1,15 +1,19 @@
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Activity,
-  Clock,
-  Hash,
-  Zap,
   CheckCircle2,
-  PlayCircle,
+  Clock,
   Clock4,
+  Gauge,
+  Hash,
+  PlayCircle,
+  Radio,
+  Signal,
+  Zap,
 } from "lucide-react";
 import { Card } from "./ui/Card";
+import { Badge } from "./ui/Badge";
 
 const STRATEGIES = [
   "SequentialStrategy",
@@ -20,16 +24,14 @@ const STRATEGIES = [
 
 export default function LiveBenchmark({ onEvent }) {
   const callbackRef = useRef(onEvent);
-
+  const [connectionState, setConnectionState] = useState("connecting");
   const [progress, setProgress] = useState(0);
-
   const [status, setStatus] = useState({
     SequentialStrategy: "Waiting",
     RandomStrategy: "Waiting",
     MultiThreadStrategy: "Waiting",
     MultiProcessStrategy: "Waiting",
   });
-
   const [liveData, setLiveData] = useState({
     strategy: "",
     attempts: 0,
@@ -38,18 +40,14 @@ export default function LiveBenchmark({ onEvent }) {
     elapsed: 0,
   });
 
-  // Keep latest callback
   useEffect(() => {
     callbackRef.current = onEvent;
   }, [onEvent]);
 
-  // Create websocket only once
   useEffect(() => {
     const socket = new WebSocket("ws://127.0.0.1:8000/ws/benchmark");
 
-    socket.onopen = () => {
-      console.log("✅ WebSocket Connected");
-    };
+    socket.onopen = () => setConnectionState("connected");
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -60,10 +58,7 @@ export default function LiveBenchmark({ onEvent }) {
 
       switch (data.event) {
         case "strategy_started":
-          setStatus((prev) => ({
-            ...prev,
-            [data.strategy]: "Running",
-          }));
+          setStatus((prev) => ({ ...prev, [data.strategy]: "Running" }));
           setProgress(data.progress);
           break;
 
@@ -78,10 +73,7 @@ export default function LiveBenchmark({ onEvent }) {
           break;
 
         case "strategy_completed":
-          setStatus((prev) => ({
-            ...prev,
-            [data.strategy]: "Completed",
-          }));
+          setStatus((prev) => ({ ...prev, [data.strategy]: "Completed" }));
           setProgress(data.progress);
           break;
 
@@ -90,209 +82,161 @@ export default function LiveBenchmark({ onEvent }) {
       }
     };
 
-    socket.onerror = (err) => {
-      // Intentionally suppressed to keep console clean
-    };
-
-    socket.onclose = () => {
-      console.log("❌ WebSocket Closed");
-    };
+    socket.onerror = () => setConnectionState("degraded");
+    socket.onclose = () => setConnectionState("offline");
 
     return () => {
-      if (socket) {
-        if (socket.readyState === WebSocket.CONNECTING) {
-          // Wait for connection to open before closing to prevent browser warnings
-          socket.onopen = () => socket.close();
-        } else if (socket.readyState === WebSocket.OPEN) {
-          socket.close();
-        }
+      if (socket.readyState === WebSocket.CONNECTING) {
+        socket.onopen = () => socket.close();
+      } else if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
       }
     };
   }, []);
 
-  const StatusIcon = ({ state }) => {
-    if (state === "Completed")
-      return <CheckCircle2 size={16} className="text-emerald-500" />;
-
-    if (state === "Running")
-      return (
-        <PlayCircle
-          size={16}
-          className="text-cyan-500 animate-pulse"
-        />
-      );
-
-    return <Clock4 size={16} className="text-slate-400 dark:text-slate-600" />;
-  };
-
-  const StatusText = ({ state }) => {
-    if (state === "Completed")
-      return (
-        <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-          Completed
-        </span>
-      );
-
-    if (state === "Running")
-      return (
-        <span className="text-cyan-600 dark:text-cyan-400 font-medium">
-          Running
-        </span>
-      );
-
-    return (
-      <span className="text-slate-500 font-medium">
-        Waiting
-      </span>
-    );
-  };
+  const activeStrategy = liveData.strategy ? liveData.strategy.replace("Strategy", "") : "Standby";
 
   return (
-    <Card className="mb-8 overflow-hidden" animate>
-
-      {/* Header */}
-
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-6 flex items-center justify-between">
-
-        <div className="flex items-center gap-3">
-
-          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-
-            <Activity size={20} className="text-cyan-600 dark:text-cyan-400" />
-
+    <Card className="h-full overflow-hidden" animate>
+      <div className="relative overflow-hidden border-b border-slate-200/80 p-6 dark:border-white/10">
+        <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(34,211,238,0.10),transparent_42%,rgba(99,102,241,0.10))]" />
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300">
+              <Activity size={22} />
+            </div>
+            <div>
+              <h2 className="m-0 text-lg font-black text-slate-950 dark:text-white">Live Benchmark Monitor</h2>
+              <p className="m-0 mt-1 text-xs text-slate-500">Grafana-style solver telemetry</p>
+            </div>
           </div>
-
-          <div>
-
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              Live Benchmark Monitor
-            </h2>
-
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Real-time solver metrics
-            </p>
-
+          <div className="flex items-center gap-3">
+            <ConnectionBadge state={connectionState} />
+            <div className="text-right">
+              <div className="text-3xl font-black tabular-nums text-slate-950 dark:text-white">{progress}%</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Progress</div>
+            </div>
           </div>
-
         </div>
-
-        <div className="text-right">
-
-          <div className="text-3xl font-black text-slate-900 dark:text-white">
-            {progress}%
-          </div>
-
-          <div className="text-xs text-slate-500 uppercase">
-            Overall Progress
-          </div>
-
-        </div>
-
       </div>
 
-      {/* Progress */}
-
-      <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800">
-
+      <div className="h-1.5 w-full bg-slate-200 dark:bg-white/10">
         <motion.div
-          className="h-full bg-cyan-500"
+          className="h-full rounded-r-full bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400"
           animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         />
-
       </div>
 
-      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Strategies */}
-
-        <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-3">
-
-          {STRATEGIES.map((strategy) => {
-
-            const state = status[strategy];
-
-            return (
-
-              <div
-                key={strategy}
-                className="flex items-center justify-between p-3"
-              >
-
-                <div className="flex items-center gap-2">
-
+      <div className="grid grid-cols-1 gap-5 p-6 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+            <Radio size={14} />
+            Strategy Timeline
+          </div>
+          <div className="space-y-3">
+            {STRATEGIES.map((strategy, index) => {
+              const state = status[strategy];
+              return (
+                <div key={strategy} className="relative flex items-center gap-3">
+                  {index < STRATEGIES.length - 1 && <div className="absolute left-[15px] top-8 h-7 w-px bg-slate-200 dark:bg-white/10" />}
                   <StatusIcon state={state} />
-
-                  <span className="text-slate-900 dark:text-slate-200">
-
-                    {strategy.replace("Strategy", "")}
-
-                  </span>
-
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-slate-950 dark:text-white">
+                      {strategy.replace("Strategy", "")}
+                    </div>
+                    <StatusText state={state} />
+                  </div>
                 </div>
-
-                <StatusText state={state} />
-
-              </div>
-
-            );
-
-          })}
-
+              );
+            })}
+          </div>
         </div>
 
-        {/* Live Metrics */}
-
-        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-
-          <Metric
-            title="Active Strategy"
-            value={
-              liveData.strategy
-                ? liveData.strategy.replace("Strategy", "")
-                : "Standby"
-            }
-          />
-
-          <Metric
-            title="Hash Rate"
-            value={`${Math.round(
-              liveData.hashrate
-            ).toLocaleString()} H/s`}
-          />
-
-          <Metric
-            title="Attempts"
-            value={liveData.attempts.toLocaleString()}
-          />
-
-          <Metric
-            title="Nonce"
-            value={liveData.nonce.toLocaleString()}
-          />
-
-          <Metric
-            title="Elapsed"
-            value={`${liveData.elapsed.toFixed(2)} sec`}
-          />
-
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Metric icon={Gauge} title="Current Strategy" value={activeStrategy} />
+          <Metric icon={Zap} title="Hash Rate" value={`${Math.round(liveData.hashrate).toLocaleString()} H/s`} accent />
+          <Metric icon={Hash} title="Attempts" value={liveData.attempts.toLocaleString()} />
+          <Metric icon={Hash} title="Nonce" value={liveData.nonce.toLocaleString()} />
+          <Metric icon={Clock} title="Elapsed Time" value={`${liveData.elapsed.toFixed(2)} sec`} />
         </div>
-
       </div>
-
     </Card>
   );
 }
 
-function Metric({ title, value }) {
-  return (
-    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-      <div className="text-xs uppercase text-slate-500 mb-2">
-        {title}
-      </div>
+function ConnectionBadge({ state }) {
+  const config = {
+    connected: { label: "Connected", variant: "success" },
+    connecting: { label: "Connecting", variant: "warning" },
+    degraded: { label: "Degraded", variant: "warning" },
+    offline: { label: "Offline", variant: "danger" },
+  }[state];
 
-      <div className="text-2xl font-bold text-slate-900 dark:text-white">
+  return (
+    <Badge variant={config.variant} dot className="capitalize">
+      <Signal size={12} />
+      {config.label}
+    </Badge>
+  );
+}
+
+function StatusIcon({ state }) {
+  if (state === "Completed") {
+    return (
+      <div className="z-10 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400">
+        <CheckCircle2 size={17} />
+      </div>
+    );
+  }
+
+  if (state === "Running") {
+    return (
+      <motion.div
+        animate={{ scale: [1, 1.08, 1] }}
+        transition={{ duration: 1.2, repeat: Infinity }}
+        className="z-10 flex h-8 w-8 items-center justify-center rounded-full bg-cyan-400/15 text-cyan-300 shadow-[0_0_22px_rgba(34,211,238,0.25)]"
+      >
+        <PlayCircle size={17} />
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-white/[0.06] dark:text-slate-500">
+      <Clock4 size={16} />
+    </div>
+  );
+}
+
+function StatusText({ state }) {
+  const className =
+    state === "Completed"
+      ? "text-emerald-500"
+      : state === "Running"
+        ? "text-cyan-400"
+        : "text-slate-500";
+
+  return <div className={`text-xs font-semibold ${className}`}>{state}</div>;
+}
+
+function Metric({ icon: Icon, title, value, accent = false }) {
+  return (
+    <motion.div
+      layout
+      className={`rounded-2xl border p-4 transition ${
+        accent
+          ? "border-cyan-400/25 bg-cyan-400/10"
+          : "border-slate-200/80 bg-slate-50/70 dark:border-white/10 dark:bg-white/[0.03]"
+      }`}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">{title}</span>
+        <Icon size={15} className={accent ? "text-cyan-300" : "text-slate-400"} />
+      </div>
+      <div className="truncate text-xl font-black tabular-nums text-slate-950 dark:text-white" title={value}>
         {value}
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { History as HistoryIcon, Clock } from "lucide-react";
+import { Clock, History as HistoryIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../api/api";
 import Layout from "../components/Layout";
@@ -9,12 +9,12 @@ import { Card } from "../components/ui/Card";
 
 function SkeletonRow() {
   return (
-    <div className="grid grid-cols-5 gap-4 p-4 border-b border-slate-800 animate-pulse">
-      <div className="h-4 w-20 bg-slate-800 rounded"></div>
-      <div className="h-4 w-32 bg-slate-800 rounded"></div>
-      <div className="h-4 w-24 bg-slate-800 rounded"></div>
-      <div className="h-4 w-28 bg-slate-800 rounded"></div>
-      <div className="h-4 w-16 bg-slate-800 rounded"></div>
+    <div className="grid grid-cols-5 gap-4 border-b border-slate-200 p-4 animate-pulse dark:border-white/10">
+      <div className="h-4 w-20 rounded bg-slate-200 dark:bg-white/10" />
+      <div className="h-4 w-32 rounded bg-slate-200 dark:bg-white/10" />
+      <div className="h-4 w-24 rounded bg-slate-200 dark:bg-white/10" />
+      <div className="h-4 w-28 rounded bg-slate-200 dark:bg-white/10" />
+      <div className="h-4 w-16 rounded bg-slate-200 dark:bg-white/10" />
     </div>
   );
 }
@@ -24,65 +24,60 @@ export default function History() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    async function loadHistory() {
+      try {
+        const response = await api.get("/history");
+        setResults(response.data);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load benchmark history.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     loadHistory();
   }, []);
 
-  async function loadHistory() {
-    try {
-      const response = await api.get("/history");
-      setResults(response.data);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load benchmark history.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <Layout>
-      {/* Page header */}
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="mb-8 flex items-center gap-4"
       >
-        <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0 shadow-inner">
-          <HistoryIcon size={24} className="text-indigo-400" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10 shadow-inner">
+          <HistoryIcon size={24} className="text-indigo-300" />
         </div>
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white m-0 leading-tight">
+          <h1 className="m-0 text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">
             Benchmark History
           </h1>
-          <p className="text-sm text-slate-400 m-0 mt-1">
+          <p className="m-0 mt-1 text-sm text-slate-500">
             Previous benchmark executions stored in the database
           </p>
         </div>
       </motion.div>
 
-      {/* Content */}
       {loading ? (
         <Card className="overflow-hidden">
-          <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-            <div className="h-8 w-8 bg-slate-800 rounded-lg animate-pulse"></div>
-            <div className="h-4 w-40 bg-slate-800 rounded animate-pulse"></div>
+          <div className="flex items-center gap-3 border-b border-slate-200 p-5 dark:border-white/10">
+            <div className="h-8 w-8 rounded-lg bg-slate-200 animate-pulse dark:bg-white/10" />
+            <div className="h-4 w-40 rounded bg-slate-200 animate-pulse dark:bg-white/10" />
           </div>
           {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonRow key={i} />
           ))}
         </Card>
       ) : results.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <Card className="py-20 px-8 text-center flex flex-col items-center justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 shadow-inner">
-              <Clock size={32} className="text-indigo-500" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card className="flex flex-col items-center justify-center px-8 py-20 text-center">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10 shadow-inner">
+              <Clock size={32} className="text-indigo-300" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No History Yet</h3>
-            <p className="text-slate-400 text-sm max-w-sm mx-auto">
+            <h3 className="mb-2 text-xl font-bold text-slate-950 dark:text-white">No History Yet</h3>
+            <p className="mx-auto max-w-sm text-sm text-slate-500">
               Run your first benchmark from the Dashboard to start building history.
             </p>
           </Card>

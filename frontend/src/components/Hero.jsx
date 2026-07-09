@@ -1,102 +1,63 @@
 import { motion } from "framer-motion";
-import { Zap, TrendingUp } from "lucide-react";
+import { Activity, Gauge, TrendingUp, Zap } from "lucide-react";
 import { Badge } from "./ui/Badge";
 
 export default function Hero() {
   return (
-    <motion.div
+    <motion.section
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
-      className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl p-10 md:p-14 mb-8 border border-slate-200 dark:border-slate-800 shadow-2xl"
+      className="relative mb-8 min-h-[360px] overflow-hidden rounded-3xl border border-slate-200/80 bg-slate-950 p-6 shadow-[0_30px_90px_rgba(2,6,23,0.35)] dark:border-white/10 md:p-10"
     >
-      {/* Dynamic Background Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/40 via-white/90 to-cyan-100/20 dark:from-indigo-900/40 dark:via-slate-900/90 dark:to-cyan-900/20" />
-      
-      {/* Decorative blobs */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-32 left-1/4 w-80 h-80 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(8,47,73,0.95),rgba(15,23,42,0.86),rgba(49,46,129,0.72))]" />
+      <motion.div
+        className="absolute inset-0 bg-[linear-gradient(100deg,transparent_0%,rgba(34,211,238,0.16)_35%,rgba(129,140,248,0.12)_58%,transparent_100%)] bg-[length:220%_100%]"
+        animate={{ backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+      />
+      <div className="absolute inset-0 mesh-bg opacity-40" />
 
-      {/* Mesh Overlay */}
-      <div className="absolute inset-0 mesh-bg opacity-40 pointer-events-none mix-blend-overlay" />
-
-      {/* Content above the mesh */}
-      <div className="relative z-10">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className="mb-6"
-        >
-          <Badge variant="indigo" className="border-indigo-500/40 bg-indigo-500/10 backdrop-blur-md px-3 py-1.5 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-            <TrendingUp size={14} className="text-indigo-600 dark:text-indigo-400" />
-            <span className="text-indigo-700 dark:text-indigo-300 font-semibold tracking-wide">
-              Advanced Analytics Engine
-            </span>
+      <div className="relative z-10 flex min-h-[300px] flex-col justify-between">
+        <div>
+          <Badge variant="accent" className="mb-6 border-cyan-400/25 bg-cyan-400/10 px-3 py-1.5 text-cyan-100">
+            <TrendingUp size={14} />
+            Advanced Analytics Engine
           </Badge>
-        </motion.div>
 
-        {/* Title row */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 mb-5">
-          <motion.div
-            className="animate-float w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-[0_8px_30px_rgba(6,182,212,0.4)] border border-white/10"
-          >
-            <Zap size={32} className="text-white" strokeWidth={2.5} />
-          </motion.div>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+            <motion.div className="animate-float flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-cyan-200/20 bg-gradient-to-br from-cyan-400 to-indigo-500 shadow-[0_12px_40px_rgba(34,211,238,0.35)]">
+              <Zap size={32} className="text-white" strokeWidth={2.5} />
+            </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.15, duration: 0.5 }}
-            className="text-5xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-400"
-          >
-            HashPilot
-          </motion.h1>
+            <div>
+              <h1 className="m-0 text-5xl font-black tracking-tight text-white md:text-6xl">
+                HashPilot
+              </h1>
+              <p className="mt-3 max-w-2xl text-lg font-medium leading-7 text-slate-300">
+                AI-powered benchmarking for hash strategy selection, real-time solver telemetry, and executive-grade performance reporting.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Subtitle */}
-        <motion.h2
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="text-2xl md:text-3xl font-semibold text-cyan-600 dark:text-cyan-400 mb-4 tracking-tight"
-        >
-          AI-Powered Benchmark Platform
-        </motion.h2>
-
-        {/* Description */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl font-medium"
-        >
-          Benchmark computational strategies, compare hash performance,
-          visualize execution metrics, and analyze historical benchmark
-          data through a premium analytics dashboard.
-        </motion.p>
-
-        {/* Stats strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.45 }}
-          className="mt-10 flex flex-wrap gap-x-10 gap-y-6"
-        >
+        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
-            { label: "Strategies", value: "4" },
-            { label: "Real-time Progress", value: "Live" },
-            { label: "AI Analysis", value: "Active" },
-            { label: "History Tracking", value: "Enabled" },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex flex-col gap-1">
-              <span className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-200">{value}</span>
-              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">{label}</span>
+            { label: "Strategies", value: "4", icon: Gauge },
+            { label: "Telemetry", value: "Live", icon: Activity },
+            { label: "AI Analysis", value: "Active", icon: Zap },
+            { label: "Reports", value: "PDF", icon: TrendingUp },
+          ].map(({ label, value, icon: Icon }) => (
+            <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-xl">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-200">
+                <Icon size={17} />
+              </div>
+              <div className="text-xl font-black text-white">{value}</div>
+              <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">{label}</div>
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </motion.section>
   );
 }

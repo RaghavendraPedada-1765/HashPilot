@@ -1,17 +1,19 @@
 import { motion } from "framer-motion";
-import { Play, Hash, Cpu, Layers } from "lucide-react";
+import { Cpu, Hash, Layers, Play, SlidersHorizontal } from "lucide-react";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 
 function SliderInput({ label, icon: Icon, value, min, max, onChange, disabled }) {
+  const fill = ((value - min) / (max - min)) * 100;
+
   return (
-    <div className="flex flex-col gap-3 group">
-      <div className="flex justify-between items-center">
-        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
-          <Icon size={16} />
+    <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 transition hover:border-cyan-400/30 dark:border-white/10 dark:bg-white/[0.03]">
+      <div className="mb-4 flex items-center justify-between">
+        <label className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-200">
+          <Icon size={16} className="text-cyan-400" />
           {label}
         </label>
-        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 text-sm font-bold text-cyan-600 dark:text-cyan-400 shadow-inner">
+        <div className="rounded-lg border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-sm font-black tabular-nums text-cyan-500">
           {value}
         </div>
       </div>
@@ -22,8 +24,13 @@ function SliderInput({ label, icon: Icon, value, min, max, onChange, disabled })
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         disabled={disabled}
-        className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-cyan-500 hover:accent-cyan-400 transition-all"
+        style={{ "--track-fill": `${fill}%` }}
+        className="range-premium w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
       />
+      <div className="mt-2 flex justify-between text-[10px] font-semibold text-slate-500">
+        <span>{min}</span>
+        <span>{max}</span>
+      </div>
     </div>
   );
 }
@@ -39,58 +46,48 @@ export default function ControlPanel({
   onRun,
 }) {
   return (
-    <Card className="p-8 mb-8" animate>
-      <div className="flex flex-col lg:flex-row gap-8 lg:items-end justify-between">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1">
-          <SliderInput
-            label="Difficulty"
-            icon={Hash}
-            value={difficulty}
-            min={1}
-            max={7}
-            onChange={setDifficulty}
-            disabled={loading}
-          />
-          <SliderInput
-            label="Threads"
-            icon={Layers}
-            value={threads}
-            min={1}
-            max={16}
-            onChange={setThreads}
-            disabled={loading}
-          />
-          <SliderInput
-            label="Processes"
-            icon={Cpu}
-            value={processes}
-            min={1}
-            max={16}
-            onChange={setProcesses}
-            disabled={loading}
-          />
-        </div>
+    <Card className="mb-8 overflow-hidden" animate>
+      <div className="border-b border-slate-200/80 p-6 dark:border-white/10">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-400/10 text-indigo-300">
+              <SlidersHorizontal size={21} />
+            </div>
+            <div>
+              <h2 className="m-0 text-lg font-black text-slate-950 dark:text-white">Control Panel</h2>
+              <p className="m-0 mt-1 text-xs text-slate-500">Tune workload parameters and launch a benchmark run.</p>
+            </div>
+          </div>
 
-        <div className="flex-shrink-0 flex items-center justify-center pt-4 lg:pt-0">
           <Button
             variant="primary"
             onClick={onRun}
             disabled={loading}
-            className="w-full lg:w-auto px-8 py-3.5 text-lg"
+            className="h-12 w-full px-7 text-base lg:w-auto"
           >
             {loading ? (
               <>
-                <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
-                Initializing...
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="h-5 w-5 rounded-full border-2 border-slate-950 border-t-transparent"
+                />
+                Running Benchmark
               </>
             ) : (
               <>
-                <Play size={20} fill="currentColor" />
+                <Play size={19} fill="currentColor" />
                 Run Benchmark
               </>
             )}
           </Button>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-3">
+        <SliderInput label="Difficulty" icon={Hash} value={difficulty} min={1} max={7} onChange={setDifficulty} disabled={loading} />
+        <SliderInput label="Threads" icon={Layers} value={threads} min={1} max={16} onChange={setThreads} disabled={loading} />
+        <SliderInput label="Processes" icon={Cpu} value={processes} min={1} max={16} onChange={setProcesses} disabled={loading} />
       </div>
     </Card>
   );

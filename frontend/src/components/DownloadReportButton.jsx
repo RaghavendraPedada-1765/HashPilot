@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, CheckCircle, FileText } from "lucide-react";
+import { CheckCircle, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../api/api";
 import { Button } from "./ui/Button";

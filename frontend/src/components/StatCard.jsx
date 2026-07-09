@@ -4,13 +4,10 @@ import { Card } from "./ui/Card";
 
 function useCountUp(endValue, duration = 1000) {
   const [count, setCount] = useState(0);
+  const isPlainString = typeof endValue === "string" && isNaN(Number(endValue));
 
   useEffect(() => {
-    // If it's not a number (e.g., string like "SequentialStrategy"), just return it
-    if (typeof endValue === "string" && isNaN(Number(endValue))) {
-      setCount(endValue);
-      return;
-    }
+    if (isPlainString) return;
 
     let startValue = 0;
     const end = parseFloat(endValue) || 0;
@@ -38,9 +35,9 @@ function useCountUp(endValue, duration = 1000) {
     };
     
     requestAnimationFrame(animate);
-  }, [endValue, duration]);
+  }, [endValue, duration, isPlainString]);
 
-  return count;
+  return isPlainString ? endValue : count;
 }
 
 export default function StatCard({ title, value, icon, color, delay = 0 }) {

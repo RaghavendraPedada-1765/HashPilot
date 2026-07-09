@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, Zap, Trophy, Medal, TrendingUp, Loader2 } from "lucide-react";
+import { BarChart3, Loader2, Medal, TrendingUp, Trophy, Zap } from "lucide-react";
 import toast from "react-hot-toast";
+import { Bar } from "react-chartjs-2";
+import {
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Tooltip,
+} from "chart.js";
 
 import api from "../api/api";
 import Layout from "../components/Layout";
 import StatCard from "../components/StatCard";
 import { Card } from "../components/ui/Card";
-
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { useTheme } from "../context/ThemeContext";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 function SkeletonCard() {
   return (
     <Card className="p-6 animate-pulse">
-      <div className="w-16 h-3 bg-slate-800 rounded mb-4"></div>
-      <div className="w-32 h-8 bg-slate-800 rounded"></div>
+      <div className="mb-4 h-3 w-16 rounded bg-slate-200 dark:bg-white/10" />
+      <div className="h-8 w-32 rounded bg-slate-200 dark:bg-white/10" />
     </Card>
   );
 }
@@ -32,112 +32,82 @@ function SkeletonCard() {
 export default function Analytics() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
+    async function loadAnalytics() {
+      try {
+        const response = await api.get("/analytics");
+        setAnalytics(response.data);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load analytics.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     loadAnalytics();
   }, []);
 
-  async function loadAnalytics() {
-    try {
-      const response = await api.get("/analytics");
-      setAnalytics(response.data);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load analytics.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <Layout>
-      {/* Page header */}
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="mb-8 flex items-center gap-4"
       >
-        <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0 shadow-inner">
-          <BarChart3 size={24} className="text-indigo-400" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10 shadow-inner">
+          <BarChart3 size={24} className="text-indigo-300" />
         </div>
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white m-0 leading-tight">
+          <h1 className="m-0 text-3xl font-black leading-tight tracking-tight text-slate-950 dark:text-white">
             Analytics Dashboard
           </h1>
-          <p className="text-sm text-slate-400 m-0 mt-1">
+          <p className="m-0 mt-1 text-sm text-slate-500">
             Performance insights and historical trends
           </p>
         </div>
       </motion.div>
 
-      {/* Loading state */}
       {loading && (
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
-          <Card className="py-20 flex items-center justify-center gap-3 text-slate-400">
-            <Loader2 size={24} className="animate-spin text-indigo-500" />
-            <span className="font-semibold text-sm tracking-wide">Loading analytics…</span>
+          <Card className="flex items-center justify-center gap-3 py-20 text-slate-500">
+            <Loader2 size={24} className="animate-spin text-indigo-400" />
+            <span className="text-sm font-semibold tracking-wide">Loading analytics...</span>
           </Card>
         </div>
       )}
 
-      {/* Loaded state */}
       {!loading && analytics && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              title="Total Runs"
-              value={analytics.total_runs}
-              icon={<TrendingUp size={20} />}
-              color="#6366f1"
-              delay={0}
-            />
-            <StatCard
-              title="Winning Runs"
-              value={analytics.total_winners}
-              icon={<Medal size={20} />}
-              color="#10b981"
-              delay={0.08}
-            />
-            <StatCard
-              title="Avg Hash Rate"
-              value={`${Math.round(analytics.average_hashrate).toLocaleString()} H/s`}
-              icon={<Zap size={20} />}
-              color="#f59e0b"
-              delay={0.16}
-            />
-            <StatCard
-              title="Best Strategy"
-              value={analytics.best_strategy}
-              icon={<Trophy size={20} />}
-              color="#8b5cf6"
-              delay={0.24}
-            />
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <StatCard title="Total Runs" value={analytics.total_runs} icon={<TrendingUp size={20} />} color="#6366f1" delay={0} />
+            <StatCard title="Winning Runs" value={analytics.total_winners} icon={<Medal size={20} />} color="#10b981" delay={0.08} />
+            <StatCard title="Avg Hash Rate" value={`${Math.round(analytics.average_hashrate).toLocaleString()} H/s`} icon={<Zap size={20} />} color="#f59e0b" delay={0.16} />
+            <StatCard title="Best Strategy" value={analytics.best_strategy} icon={<Trophy size={20} />} color="#8b5cf6" delay={0.24} />
           </div>
 
-          {/* Chart card */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.3 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.3 }}>
             <Card className="overflow-hidden">
-              <div className="p-6 border-b border-slate-800 bg-slate-900/50 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shadow-inner">
-                  <BarChart3 size={16} className="text-cyan-400" />
+              <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50/70 p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 shadow-inner">
+                  <BarChart3 size={17} className="text-cyan-300" />
                 </div>
-                <h2 className="text-lg font-bold text-white m-0">Average Hash Rate by Strategy</h2>
+                <h2 className="m-0 text-lg font-black text-slate-950 dark:text-white">Average Hash Rate by Strategy</h2>
               </div>
 
-              <div className="p-8 h-[400px]">
+              <div className="h-[400px] p-8">
                 <Bar
                   data={{
-                    labels: analytics.strategies.map((item) =>
-                      item.strategy.replace("Strategy", "")
-                    ),
+                    labels: analytics.strategies.map((item) => item.strategy.replace("Strategy", "")),
                     datasets: [
                       {
                         label: "Avg Hash Rate (H/s)",
@@ -145,14 +115,15 @@ export default function Analytics() {
                         backgroundColor: (context) => {
                           const ctx = context.chart.ctx;
                           const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                          gradient.addColorStop(0, "rgba(99, 102, 241, 0.8)");
-                          gradient.addColorStop(1, "rgba(99, 102, 241, 0.1)");
+                          gradient.addColorStop(0, "rgba(34, 211, 238, 0.9)");
+                          gradient.addColorStop(1, "rgba(129, 140, 248, 0.18)");
                           return gradient;
                         },
-                        borderColor: "rgba(99, 102, 241, 1)",
+                        borderColor: "rgba(34, 211, 238, 0.9)",
                         borderWidth: 1,
-                        borderRadius: 8,
-                        barPercentage: 0.5,
+                        borderRadius: 10,
+                        borderSkipped: false,
+                        barPercentage: 0.55,
                       },
                     ],
                   }}
@@ -160,33 +131,32 @@ export default function Analytics() {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                      legend: { display: false },
+                      legend: {
+                        display: true,
+                        position: "top",
+                        align: "end",
+                        labels: { color: isDark ? "#cbd5e1" : "#475569", usePointStyle: true, font: { size: 12, weight: "700" } },
+                      },
                       tooltip: {
-                        backgroundColor: "rgba(15, 23, 42, 0.95)",
-                        titleColor: "#f1f5f9",
-                        bodyColor: "#94a3b8",
-                        borderColor: "rgba(30, 41, 59, 1)",
+                        backgroundColor: isDark ? "rgba(2, 6, 23, 0.95)" : "rgba(255,255,255,0.96)",
+                        titleColor: isDark ? "#e2e8f0" : "#0f172a",
+                        bodyColor: isDark ? "#94a3b8" : "#475569",
+                        borderColor: isDark ? "rgba(34, 211, 238, 0.22)" : "rgba(14, 165, 233, 0.18)",
                         borderWidth: 1,
                         padding: 14,
-                        cornerRadius: 10,
-                        callbacks: {
-                          label: (ctx) => ` ${Math.round(ctx.raw).toLocaleString()} H/s`,
-                        },
+                        cornerRadius: 12,
+                        callbacks: { label: (ctx) => ` ${Math.round(ctx.raw).toLocaleString()} H/s` },
                       },
                     },
                     scales: {
                       x: {
-                        ticks: { color: "#64748b", font: { family: "'Inter', sans-serif", size: 12, weight: "600" } },
+                        ticks: { color: isDark ? "#cbd5e1" : "#475569", font: { size: 12, weight: "700" } },
                         grid: { display: false },
                         border: { display: false },
                       },
                       y: {
-                        ticks: {
-                          color: "#64748b",
-                          font: { family: "'Inter', sans-serif", size: 12 },
-                          callback: (v) => Math.round(v / 1000) + "k",
-                        },
-                        grid: { color: "rgba(255,255,255,0.05)" },
+                        ticks: { color: "#64748b", font: { size: 12 }, callback: (v) => `${Math.round(v / 1000)}k` },
+                        grid: { color: isDark ? "rgba(148,163,184,0.08)" : "rgba(15,23,42,0.06)" },
                         border: { display: false },
                       },
                     },
@@ -199,18 +169,14 @@ export default function Analytics() {
         </>
       )}
 
-      {/* Empty state when no analytics data */}
       {!loading && !analytics && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <Card className="py-20 px-8 text-center flex flex-col items-center justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 shadow-inner">
-              <BarChart3 size={32} className="text-indigo-500" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card className="flex flex-col items-center justify-center px-8 py-20 text-center">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10 shadow-inner">
+              <BarChart3 size={32} className="text-indigo-300" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No Analytics Data</h3>
-            <p className="text-slate-400 text-sm max-w-sm mx-auto">
+            <h3 className="mb-2 text-xl font-bold text-slate-950 dark:text-white">No Analytics Data</h3>
+            <p className="mx-auto max-w-sm text-sm text-slate-500">
               Run benchmarks from the Dashboard to generate analytics data.
             </p>
           </Card>

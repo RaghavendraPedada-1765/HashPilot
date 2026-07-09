@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 import api from "../api/api";
 
@@ -36,17 +37,17 @@ export default function Dashboard() {
   const [prediction, setPrediction] = useState(null);
 
   useEffect(() => {
+    async function loadSystemInfo() {
+      try {
+        const response = await api.get("/system");
+        setSystemInfo(response.data);
+      } catch (error) {
+        console.error("System Info Error:", error);
+      }
+    }
+
     loadSystemInfo();
   }, []);
-
-  async function loadSystemInfo() {
-    try {
-      const response = await api.get("/system");
-      setSystemInfo(response.data);
-    } catch (error) {
-      console.error("System Info Error:", error);
-    }
-  }
 
   // ============================
   // AI Prediction
@@ -118,7 +119,7 @@ export default function Dashboard() {
 
       console.error(error);
 
-      alert("Benchmark failed.");
+      toast.error("Benchmark failed. Please check the backend connection and try again.");
 
     }
 
@@ -245,12 +246,10 @@ export default function Dashboard() {
 
       <AIRecommendation analysis={analysis} />
 
-      <SystemInfo info={systemInfo} />
-
-      <LiveBenchmark onEvent={handleWSEvent} />
-
-      {/* AI Prediction */}
-      <AIPredictionCard prediction={prediction} />
+      <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6 mb-8">
+        <LiveBenchmark onEvent={handleWSEvent} />
+        <AIPredictionCard prediction={prediction} />
+      </div>
 
       <ProgressPanel
 
@@ -281,6 +280,8 @@ export default function Dashboard() {
         onRun={runBenchmark}
 
       />
+
+      <SystemInfo info={systemInfo} />
 
       <div className="flex justify-center mb-8">
 

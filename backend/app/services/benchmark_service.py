@@ -2,6 +2,9 @@
 HashPilot Benchmark Service
 """
 
+from app.repositories.ml_training_repository import MLTrainingRepository
+
+import psutil
 import asyncio
 
 from app.core.logger import logger
@@ -27,26 +30,25 @@ class BenchmarkService:
     def __init__(self):
 
         self.repository = BenchmarkRepository()
+
+        self.ml_repository = MLTrainingRepository()
     def progress_callback(self, message):
 
         """
         Broadcast benchmark progress over WebSocket.
         """
+        if not manager.connections or manager.loop is None:
+            return
 
         try:
-
             loop = asyncio.get_running_loop()
-
-            loop.create_task(
-                manager.broadcast(message)
-            )
-
+            if loop == manager.loop:
+                loop.create_task(manager.broadcast(message))
+            else:
+                asyncio.run_coroutine_threadsafe(manager.broadcast(message), manager.loop)
         except RuntimeError:
-
-            # No running event loop
-            asyncio.run(
-                manager.broadcast(message)
-            )
+            # No running event loop in this thread
+            asyncio.run_coroutine_threadsafe(manager.broadcast(message), manager.loop)
 
     def run(
 
@@ -116,6 +118,29 @@ class BenchmarkService:
                 results,
 
                 difficulty,
+
+            )
+            winner = max(results, key=lambda r: r["hashrate"])
+
+            memory = psutil.virtual_memory()
+
+            self.ml_repository.save_training_sample(
+
+                db=db,
+
+                cpu_cores=psutil.cpu_count(logical=False),
+
+                logical_threads=psutil.cpu_count(logical=True),
+
+                ram_gb=round(memory.total / (1024 ** 3), 2),
+
+                difficulty=difficulty,
+
+                threads=threads,
+
+                processes=processes,
+
+                winner_strategy=winner["strategy"],
 
             )
 

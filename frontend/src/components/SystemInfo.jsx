@@ -1,145 +1,64 @@
+import { Cpu, MemoryStick, Layers, Code, Terminal, Monitor, Server } from "lucide-react";
+import { Card } from "./ui/Card";
 import { motion } from "framer-motion";
-import { Cpu, Monitor, Server, MemoryStick, Globe, Code2, Layers } from "lucide-react";
 
-const INFO_ITEMS = [
-  { key: "cpu",              label: "CPU",              icon: Cpu,         color: "#06b6d4" },
-  { key: "physical_cores",   label: "Physical Cores",   icon: Layers,      color: "#6366f1" },
-  { key: "logical_threads",  label: "Logical Threads",  icon: Server,      color: "#8b5cf6" },
-  { key: "ram_gb",           label: "RAM",              icon: MemoryStick, color: "#10b981", suffix: " GB" },
-  { key: "os",               label: "Operating System", icon: Monitor,     color: "#f59e0b" },
-  { key: "python",           label: "Python Version",   icon: Code2,       color: "#22d3ee" },
-  { key: "architecture",     label: "Architecture",     icon: Globe,       color: "#f97316" },
-];
-
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.06 } },
-};
-
-const itemVariants = {
-  hidden:  { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-};
-
-export default function SystemInfo({ info }) {
-  if (!info) return null;
-
+function InfoBlock({ icon: Icon, label, value, delay }) {
   return (
     <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      style={{
-        background: "var(--bg-glass)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: "20px",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-md)",
-        marginBottom: "28px",
-        overflow: "hidden",
-      }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
     >
-      {/* Header */}
-      <motion.div
-        variants={itemVariants}
-        style={{
-          padding: "18px 24px",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          background: "rgba(6,182,212,0.04)",
-        }}
-      >
-        <div
-          style={{
-            width: "30px",
-            height: "30px",
-            borderRadius: "8px",
-            background: "rgba(6,182,212,0.15)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "1px solid rgba(6,182,212,0.25)",
-          }}
-        >
-          <Cpu size={14} color="#22d3ee" />
-        </div>
-        <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-heading)" }}>
-          System Information
-        </span>
-      </motion.div>
-
-      {/* Info grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-          gap: "1px",
-          background: "var(--border)",
-        }}
-      >
-        {INFO_ITEMS.map(({ key, label, icon: Icon, color, suffix = "" }) => {
-          const val = info[key];
-          if (val === undefined || val === null) return null;
-
-          return (
-            <motion.div
-              key={key}
-              variants={itemVariants}
-              style={{
-                background: "var(--bg-surface)",
-                padding: "16px 20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "14px",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = "var(--bg-elevated)"}
-              onMouseLeave={e => e.currentTarget.style.background = "var(--bg-surface)"}
-            >
-              {/* Icon */}
-              <div
-                style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "9px",
-                  background: `${color}18`,
-                  border: `1px solid ${color}33`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <Icon size={14} color={color} />
-              </div>
-
-              {/* Label + value */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase" }}>
-                  {label}
-                </div>
-                <div
-                  style={{
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    color: "var(--text-heading)",
-                    marginTop: "2px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={`${val}${suffix}`}
-                >
-                  {val}{suffix}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+      <div className="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex flex-shrink-0 items-center justify-center border border-indigo-500/20 shadow-inner">
+        <Icon size={18} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">{label}</div>
+        <div className="text-sm font-semibold text-slate-900 dark:text-slate-200 truncate" title={value?.toString()}>{value || "Unknown"}</div>
       </div>
     </motion.div>
+  );
+}
+
+export default function SystemInfo({ info }) {
+  if (!info) {
+    return (
+      <Card className="p-8 mb-8">
+        <div className="animate-pulse flex flex-col gap-4">
+          <div className="h-6 w-48 bg-slate-200 dark:bg-slate-800 rounded"></div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-8 mb-8" animate>
+      <div className="flex items-center gap-3 mb-6 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <Server size={20} className="text-cyan-600 dark:text-cyan-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 m-0">System Architecture</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 m-0 mt-0.5">Hardware and runtime environment details</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <InfoBlock icon={Cpu} label="Processor" value={info.cpu} delay={0.1} />
+        <InfoBlock icon={Layers} label="Logical Cores" value={info.logical_threads} delay={0.15} />
+        <InfoBlock icon={MemoryStick} label="Memory (RAM)" value={`${info.ram_gb} GB`} delay={0.2} />
+        <InfoBlock icon={Terminal} label="Operating System" value={info.os} delay={0.25} />
+        <InfoBlock icon={Monitor} label="Physical Cores" value={info.physical_cores} delay={0.3} />
+        <InfoBlock icon={Server} label="Hostname" value={info.hostname} delay={0.35} />
+        <InfoBlock icon={Code} label="Python Version" value={info.python} delay={0.4} />
+        <InfoBlock icon={Cpu} label="Architecture" value={info.architecture} delay={0.45} />
+      </div>
+    </Card>
   );
 }

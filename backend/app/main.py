@@ -8,12 +8,14 @@ from app.api.history import router as history_router
 from app.database.db import Base
 from app.database.db import engine
 
-import app.models.benchmark_model
 
 from app.api.websocket import router as websocket_router
 from app.api.system import router as system_router
 from app.api.report import router as report_router
 
+import app.models.benchmark_model
+import app.models.ml_training_model
+from app.api.predict import router as predict_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -47,6 +49,7 @@ app.include_router(analytics_router)
 app.include_router(websocket_router)
 app.include_router(system_router)
 app.include_router(report_router)
+app.include_router(predict_router)
 
 @app.get("/")
 def root():

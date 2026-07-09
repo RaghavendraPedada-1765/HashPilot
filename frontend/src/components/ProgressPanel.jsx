@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, Clock, Zap } from "lucide-react";
+import { Card } from "./ui/Card";
 
 const STEPS = [
-  { label: "Sequential",   icon: Zap,    color: "#6366f1" },
-  { label: "Random",       icon: Zap,    color: "#8b5cf6" },
-  { label: "MultiThread",  icon: Zap,    color: "#06b6d4" },
-  { label: "MultiProcess", icon: Zap,    color: "#10b981" },
+  { label: "Sequential",   icon: Zap,    color: "indigo" },
+  { label: "Random",       icon: Zap,    color: "purple" },
+  { label: "MultiThread",  icon: Zap,    color: "cyan" },
+  { label: "MultiProcess", icon: Zap,    color: "emerald" },
 ];
 
 export default function ProgressPanel({ loading, progress, stage }) {
@@ -17,157 +18,86 @@ export default function ProgressPanel({ loading, progress, stage }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.35 }}
-      style={{
-        background: "var(--bg-glass)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: "20px",
-        border: "1px solid rgba(99,102,241,0.25)",
-        boxShadow: "0 12px 35px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.08) inset",
-        marginBottom: "28px",
-        overflow: "hidden",
-      }}
+      className="mb-8"
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: "18px 24px",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          background: "rgba(99,102,241,0.06)",
-        }}
-      >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-          style={{
-            width: "28px",
-            height: "28px",
-            borderRadius: "50%",
-            border: "2.5px solid rgba(99,102,241,0.3)",
-            borderTopColor: "#6366f1",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        />
-        <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-heading)" }}>
-          Running Benchmark
-        </span>
-        <span
-          style={{
-            marginLeft: "auto",
-            fontSize: "22px",
-            fontWeight: 800,
-            color: "#a5b4fc",
-            fontVariantNumeric: "tabular-nums",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          {progress}%
-        </span>
-      </div>
-
-      <div style={{ padding: "24px" }}>
-        {/* Progress bar */}
-        <div
-          style={{
-            width: "100%",
-            height: "8px",
-            background: "rgba(255,255,255,0.05)",
-            borderRadius: "999px",
-            overflow: "hidden",
-            marginBottom: "28px",
-            position: "relative",
-          }}
-        >
+      <Card className="overflow-hidden shadow-[0_12px_35px_rgba(0,0,0,0.4)] border-indigo-500/25 relative">
+        <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(99,102,241,0.08)] pointer-events-none" />
+        
+        {/* Header */}
+        <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 bg-indigo-50 dark:bg-indigo-500/5">
           <motion.div
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            style={{
-              height: "100%",
-              background: "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4)",
-              borderRadius: "999px",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            {/* Shimmer */}
-            <div
-              className="shimmer"
-              style={{ position: "absolute", inset: 0 }}
-            />
-          </motion.div>
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+            className="w-7 h-7 rounded-full border-[2.5px] border-indigo-200 dark:border-indigo-500/30 border-t-indigo-600 dark:border-t-indigo-500 flex items-center justify-center"
+          />
+          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            Running Benchmark
+          </span>
+          <span className="ml-auto text-2xl font-extrabold text-indigo-600 dark:text-indigo-300 font-mono tracking-tight tabular-nums">
+            {progress}%
+          </span>
         </div>
 
-        {/* Stepper */}
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          {STEPS.map((step, index) => {
-            const isDone    = index < stage;
-            const isCurrent = index === stage;
-            const isPending = index > stage;
+        <div className="p-6">
+          {/* Progress bar */}
+          <div className="w-full h-2 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden mb-8 relative">
+            <motion.div
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-full relative overflow-hidden"
+            >
+              {/* Shimmer */}
+              <div className="absolute inset-0 animate-shimmer bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0)_100%)] bg-[length:200%_100%]" />
+            </motion.div>
+          </div>
 
-            return (
-              <div key={step.label} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                {/* Step circle */}
-                <motion.div
-                  animate={isCurrent ? { scale: [1, 1.1, 1] } : {}}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: isDone
-                      ? "rgba(16,185,129,0.15)"
-                      : isCurrent
-                        ? "rgba(99,102,241,0.2)"
-                        : "rgba(255,255,255,0.04)",
-                    border: isDone
-                      ? "1.5px solid rgba(16,185,129,0.4)"
-                      : isCurrent
-                        ? "1.5px solid rgba(99,102,241,0.5)"
-                        : "1.5px solid rgba(255,255,255,0.08)",
-                    flexShrink: 0,
-                    transition: "all 0.3s",
-                  }}
-                >
-                  {isDone ? (
-                    <CheckCircle2 size={16} color="#10b981" />
-                  ) : isCurrent ? (
-                    <Loader2 size={15} color="#818cf8" className="spin" />
-                  ) : (
-                    <Clock size={14} color="var(--text-faint)" />
-                  )}
-                </motion.div>
+          {/* Stepper */}
+          <div className="flex gap-2 items-center justify-between px-2">
+            {STEPS.map((step, index) => {
+              const isDone    = index < stage;
+              const isCurrent = index === stage;
 
-                {/* Connector line between steps */}
+              return (
+                <div key={step.label} className="flex flex-col items-center gap-2 flex-1">
+                  {/* Step circle */}
+                  <motion.div
+                    animate={isCurrent ? { scale: [1, 1.1, 1] } : {}}
+                    transition={{ duration: 1, repeat: Infinity }}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 border-[1.5px] ${
+                      isDone
+                        ? "bg-emerald-100 dark:bg-emerald-500/15 border-emerald-300 dark:border-emerald-500/40"
+                        : isCurrent
+                          ? "bg-indigo-100 dark:bg-indigo-500/20 border-indigo-300 dark:border-indigo-500/50"
+                          : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10"
+                    }`}
+                  >
+                    {isDone ? (
+                      <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-500" />
+                    ) : isCurrent ? (
+                      <Loader2 size={16} className="text-indigo-600 dark:text-indigo-400 animate-spin" />
+                    ) : (
+                      <Clock size={14} className="text-slate-400 dark:text-slate-600" />
+                    )}
+                  </motion.div>
 
-                {/* Label */}
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: isDone
-                      ? "#10b981"
-                      : isCurrent
-                        ? "#a5b4fc"
-                        : "var(--text-muted)",
-                    textAlign: "center",
-                    transition: "color 0.3s",
-                  }}
-                >
-                  {step.label}
-                </span>
-              </div>
-            );
-          })}
+                  {/* Label */}
+                  <span
+                    className={`text-[11px] font-semibold text-center transition-colors duration-300 ${
+                      isDone
+                        ? "text-emerald-600 dark:text-emerald-500"
+                        : isCurrent
+                          ? "text-indigo-600 dark:text-indigo-300"
+                          : "text-slate-500"
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </Card>
     </motion.div>
   );
 }

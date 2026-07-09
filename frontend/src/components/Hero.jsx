@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Zap, TrendingUp } from "lucide-react";
+import { Badge } from "./ui/Badge";
 
 export default function Hero() {
   return (
@@ -7,101 +8,48 @@ export default function Hero() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
-      className="mesh-bg"
-      style={{
-        background: "linear-gradient(135deg, #1e1b4b 0%, #0d1117 55%, #0c1a2e 100%)",
-        borderRadius: "20px",
-        padding: "48px 52px",
-        marginBottom: "32px",
-        border: "1px solid rgba(99,102,241,0.2)",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
-        position: "relative",
-        overflow: "hidden",
-      }}
+      className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl p-10 md:p-14 mb-8 border border-slate-200 dark:border-slate-800 shadow-2xl"
     >
+      {/* Dynamic Background Gradients */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/40 via-white/90 to-cyan-100/20 dark:from-indigo-900/40 dark:via-slate-900/90 dark:to-cyan-900/20" />
+      
       {/* Decorative blobs */}
-      <div
-        style={{
-          position: "absolute",
-          right: "-60px",
-          top: "-60px",
-          width: "280px",
-          height: "280px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: "30%",
-          bottom: "-40px",
-          width: "200px",
-          height: "200px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(6,182,212,0.10) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
+      <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
+      <div className="absolute -bottom-32 left-1/4 w-80 h-80 rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none" />
+
+      {/* Mesh Overlay */}
+      <div className="absolute inset-0 mesh-bg opacity-40 pointer-events-none mix-blend-overlay" />
 
       {/* Content above the mesh */}
-      <div style={{ position: "relative", zIndex: 1 }}>
+      <div className="relative z-10">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "7px",
-            background: "rgba(99,102,241,0.15)",
-            border: "1px solid rgba(99,102,241,0.35)",
-            borderRadius: "999px",
-            padding: "5px 14px",
-            marginBottom: "24px",
-          }}
+          className="mb-6"
         >
-          <TrendingUp size={12} color="#a5b4fc" />
-          <span style={{ fontSize: "12px", color: "#a5b4fc", fontWeight: 600, letterSpacing: "0.3px" }}>
-            AI-Powered Benchmark Analysis
-          </span>
+          <Badge variant="indigo" className="border-indigo-500/40 bg-indigo-500/10 backdrop-blur-md px-3 py-1.5 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+            <TrendingUp size={14} className="text-indigo-600 dark:text-indigo-400" />
+            <span className="text-indigo-700 dark:text-indigo-300 font-semibold tracking-wide">
+              Advanced Analytics Engine
+            </span>
+          </Badge>
         </motion.div>
 
         {/* Title row */}
-        <div style={{ display: "flex", alignItems: "center", gap: "18px", marginBottom: "16px" }}>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 mb-5">
           <motion.div
-            className="float-anim"
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "16px",
-              background: "var(--grad-primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 8px 24px rgba(99,102,241,0.45)",
-              flexShrink: 0,
-            }}
+            className="animate-float w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-[0_8px_30px_rgba(6,182,212,0.4)] border border-white/10"
           >
-            <Zap size={28} color="white" strokeWidth={2.5} />
+            <Zap size={32} className="text-white" strokeWidth={2.5} />
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15, duration: 0.5 }}
-            style={{
-              fontSize: "48px",
-              fontWeight: 900,
-              letterSpacing: "-2px",
-              lineHeight: 1,
-              background: "linear-gradient(135deg, #e2e8f0, #c7d2fe, #a5b4fc)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
+            className="text-5xl md:text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-400"
           >
             HashPilot
           </motion.h1>
@@ -112,13 +60,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          style={{
-            fontSize: "22px",
-            fontWeight: 600,
-            color: "#c7d2fe",
-            marginBottom: "14px",
-            letterSpacing: "-0.3px",
-          }}
+          className="text-2xl md:text-3xl font-semibold text-cyan-600 dark:text-cyan-400 mb-4 tracking-tight"
         >
           AI-Powered Benchmark Platform
         </motion.h2>
@@ -128,16 +70,11 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          style={{
-            fontSize: "15px",
-            color: "#94a3b8",
-            lineHeight: "1.75",
-            maxWidth: "680px",
-          }}
+          className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl font-medium"
         >
           Benchmark computational strategies, compare hash performance,
           visualize execution metrics, and analyze historical benchmark
-          data through a modern analytics dashboard.
+          data through a premium analytics dashboard.
         </motion.p>
 
         {/* Stats strip */}
@@ -145,21 +82,17 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.45 }}
-          style={{
-            marginTop: "28px",
-            display: "flex",
-            gap: "28px",
-          }}
+          className="mt-10 flex flex-wrap gap-x-10 gap-y-6"
         >
           {[
             { label: "Strategies", value: "4" },
-            { label: "Real-time Progress", value: "✓" },
-            { label: "AI Analysis", value: "✓" },
-            { label: "History Tracking", value: "✓" },
+            { label: "Real-time Progress", value: "Live" },
+            { label: "AI Analysis", value: "Active" },
+            { label: "History Tracking", value: "Enabled" },
           ].map(({ label, value }) => (
-            <div key={label} style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <span style={{ fontSize: "16px", fontWeight: 700, color: "#a5b4fc" }}>{value}</span>
-              <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 500 }}>{label}</span>
+            <div key={label} className="flex flex-col gap-1">
+              <span className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-200">{value}</span>
+              <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">{label}</span>
             </div>
           ))}
         </motion.div>

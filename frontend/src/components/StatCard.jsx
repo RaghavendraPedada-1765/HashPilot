@@ -1,126 +1,95 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Card } from "./ui/Card";
 
-export default function StatCard({
-  title,
-  value,
-  icon,
-  color = "#6366f1",
-  delay = 0,
-}) {
+function useCountUp(endValue, duration = 1000) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    // If it's not a number (e.g., string like "SequentialStrategy"), just return it
+    if (typeof endValue === "string" && isNaN(Number(endValue))) {
+      setCount(endValue);
+      return;
+    }
+
+    let startValue = 0;
+    const end = parseFloat(endValue) || 0;
+    const isFloat = endValue.toString().includes(".");
+    
+    let startTime = null;
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const percentage = Math.min(progress / duration, 1);
+      
+      const current = startValue + (end - startValue) * percentage;
+      
+      if (isFloat) {
+        setCount(current.toFixed(4));
+      } else {
+        setCount(Math.floor(current));
+      }
+
+      if (progress < duration) {
+        requestAnimationFrame(animate);
+      } else {
+        setCount(endValue);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [endValue, duration]);
+
+  return count;
+}
+
+export default function StatCard({ title, value, icon, color, delay = 0 }) {
+  const animatedValue = useCountUp(value, 1000);
+  
+  // Try formatting if it's a number, otherwise just string it
+  const formattedValue = typeof animatedValue === "number" && !title.includes("Runtime") 
+    ? animatedValue.toLocaleString() 
+    : animatedValue;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay, ease: "easeOut" }}
-      whileHover={{ y: -6, boxShadow: `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.09)` }}
-      style={{
-        background: "var(--bg-glass)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: "18px",
-        padding: "24px",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-md)",
-        overflow: "hidden",
-        position: "relative",
-        cursor: "default",
-        transition: "border-color 0.2s",
-      }}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      whileHover={{ y: -4 }}
+      className="h-full"
     >
-      {/* Top glow orb */}
-      <div
-        style={{
-          position: "absolute",
-          right: "-20px",
-          top: "-20px",
-          width: "100px",
-          height: "100px",
-          borderRadius: "50%",
-          background: color,
-          opacity: 0.12,
-          filter: "blur(28px)",
-          pointerEvents: "none",
-        }}
-      />
+      <Card className="h-full p-6 relative overflow-hidden group">
+        {/* Animated Gradient Border (simulated with before/after) */}
+        <div 
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at top right, ${color}30 0%, transparent 50%)`,
+          }}
+        />
+        
+        {/* Top edge colored border */}
+        <div 
+          className="absolute top-0 left-0 right-0 h-1"
+          style={{ backgroundColor: color }}
+        />
 
-      {/* Bottom left subtle glow */}
-      <div
-        style={{
-          position: "absolute",
-          left: "-10px",
-          bottom: "-10px",
-          width: "60px",
-          height: "60px",
-          borderRadius: "50%",
-          background: color,
-          opacity: 0.06,
-          filter: "blur(18px)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {/* Text */}
-        <div style={{ flex: 1, minWidth: 0, paddingRight: "12px" }}>
-          <p
-            style={{
-              color: "var(--text-muted)",
-              margin: 0,
-              fontSize: "11px",
-              fontWeight: 700,
-              letterSpacing: "0.9px",
-              textTransform: "uppercase",
-            }}
-          >
-            {title}
-          </p>
-
-          <h2
-            style={{
-              marginTop: "10px",
-              marginBottom: 0,
-              fontSize: String(value).length > 14 ? "15px" : "26px",
-              fontWeight: 800,
-              color: "var(--text-heading)",
-              letterSpacing: String(value).length > 14 ? "-0.2px" : "-0.5px",
-              lineHeight: 1.25,
-              wordBreak: "break-word",
-            }}
-          >
-            {value}
-          </h2>
-        </div>
-
-        {/* Icon box */}
-        {icon && (
-          <div
-            style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "13px",
-              background: `${color}22`,
-              border: `1px solid ${color}44`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "22px",
-              color: color,
-              flexShrink: 0,
-              boxShadow: `0 4px 16px ${color}30`,
-            }}
+        <div className="flex justify-between items-start mb-4">
+          <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{title}</div>
+          <div 
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
+            style={{ backgroundColor: `${color}15`, color: color, border: `1px solid ${color}30` }}
           >
             {icon}
           </div>
-        )}
-      </div>
+        </div>
+
+        <div className="flex items-baseline gap-2">
+          <div className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight break-all">
+            {formattedValue}
+          </div>
+        </div>
+      </Card>
     </motion.div>
   );
 }

@@ -1,25 +1,20 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { History as HistoryIcon, Clock } from "lucide-react";
+import toast from "react-hot-toast";
 import api from "../api/api";
 import Layout from "../components/Layout";
 import BenchmarkTable from "../components/BenchmarkTable";
+import { Card } from "../components/ui/Card";
 
-/* ── Skeleton rows ── */
 function SkeletonRow() {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "80px 1fr 1fr 1fr 1fr 1fr",
-        gap: "16px",
-        padding: "14px 20px",
-        borderBottom: "1px solid var(--border)",
-      }}
-    >
-      {[80, 160, 100, 120, 130, 100].map((w, i) => (
-        <div key={i} className="skeleton" style={{ height: "14px", width: `${w}px`, borderRadius: "6px" }} />
-      ))}
+    <div className="grid grid-cols-5 gap-4 p-4 border-b border-slate-800 animate-pulse">
+      <div className="h-4 w-20 bg-slate-800 rounded"></div>
+      <div className="h-4 w-32 bg-slate-800 rounded"></div>
+      <div className="h-4 w-24 bg-slate-800 rounded"></div>
+      <div className="h-4 w-28 bg-slate-800 rounded"></div>
+      <div className="h-4 w-16 bg-slate-800 rounded"></div>
     </div>
   );
 }
@@ -38,7 +33,7 @@ export default function History() {
       setResults(response.data);
     } catch (err) {
       console.error(err);
-      alert("Failed to load benchmark history.");
+      toast.error("Failed to load benchmark history.");
     } finally {
       setLoading(false);
     }
@@ -51,104 +46,46 @@ export default function History() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{ marginBottom: "28px" }}
+        className="mb-8 flex items-center gap-4"
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "8px" }}>
-          <div
-            style={{
-              width: "42px",
-              height: "42px",
-              borderRadius: "12px",
-              background: "rgba(99,102,241,0.15)",
-              border: "1px solid rgba(99,102,241,0.3)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <HistoryIcon size={20} color="#a5b4fc" />
-          </div>
-          <div>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, letterSpacing: "-0.5px" }}>
-              Benchmark History
-            </h1>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: "2px" }}>
-              Previous benchmark executions stored in the database
-            </p>
-          </div>
+        <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0 shadow-inner">
+          <HistoryIcon size={24} className="text-indigo-400" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-white m-0 leading-tight">
+            Benchmark History
+          </h1>
+          <p className="text-sm text-slate-400 m-0 mt-1">
+            Previous benchmark executions stored in the database
+          </p>
         </div>
       </motion.div>
 
       {/* Content */}
       {loading ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          style={{
-            background: "var(--bg-glass)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            borderRadius: "20px",
-            border: "1px solid var(--border)",
-            overflow: "hidden",
-          }}
-        >
-          {/* Skeleton header */}
-          <div
-            style={{
-              padding: "18px 24px",
-              borderBottom: "1px solid var(--border)",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
-            <div className="skeleton" style={{ width: "30px", height: "30px", borderRadius: "8px" }} />
-            <div className="skeleton" style={{ width: "160px", height: "14px" }} />
+        <Card className="overflow-hidden">
+          <div className="p-5 border-b border-slate-800 flex items-center gap-3">
+            <div className="h-8 w-8 bg-slate-800 rounded-lg animate-pulse"></div>
+            <div className="h-4 w-40 bg-slate-800 rounded animate-pulse"></div>
           </div>
-
-          {/* Skeleton rows */}
           {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonRow key={i} />
           ))}
-        </motion.div>
+        </Card>
       ) : results.length === 0 ? (
-        /* Empty state */
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          style={{
-            background: "var(--bg-glass)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            borderRadius: "20px",
-            border: "1px solid var(--border)",
-            padding: "80px 40px",
-            textAlign: "center",
-          }}
         >
-          <div
-            style={{
-              width: "60px",
-              height: "60px",
-              borderRadius: "18px",
-              background: "rgba(99,102,241,0.1)",
-              border: "1px solid rgba(99,102,241,0.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 20px",
-            }}
-          >
-            <Clock size={26} color="#6366f1" />
-          </div>
-          <h3 style={{ color: "var(--text-heading)", fontSize: "18px", marginBottom: "8px" }}>
-            No History Yet
-          </h3>
-          <p style={{ color: "var(--text-muted)", fontSize: "14px", maxWidth: "320px", margin: "0 auto" }}>
-            Run your first benchmark from the Dashboard to start building history.
-          </p>
+          <Card className="py-20 px-8 text-center flex flex-col items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 shadow-inner">
+              <Clock size={32} className="text-indigo-500" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">No History Yet</h3>
+            <p className="text-slate-400 text-sm max-w-sm mx-auto">
+              Run your first benchmark from the Dashboard to start building history.
+            </p>
+          </Card>
         </motion.div>
       ) : (
         <BenchmarkTable results={results} />

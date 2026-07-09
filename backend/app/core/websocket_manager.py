@@ -1,11 +1,15 @@
+import asyncio
 from fastapi import WebSocket
 
 
 class ConnectionManager:
     def __init__(self):
         self.connections = []
+        self.loop = None
 
     async def connect(self, websocket: WebSocket):
+        if self.loop is None:
+            self.loop = asyncio.get_running_loop()
         await websocket.accept()
         self.connections.append(websocket)
 

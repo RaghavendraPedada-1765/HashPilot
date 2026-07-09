@@ -7,6 +7,7 @@ import {
   Zap,
   Activity,
 } from "lucide-react";
+import { Badge } from "./ui/Badge";
 
 const navItems = [
   { to: "/",          label: "Dashboard", icon: LayoutDashboard },
@@ -32,116 +33,44 @@ export default function Sidebar() {
       initial="hidden"
       animate="visible"
       variants={sidebarVariants}
-      style={{
-        width: "260px",
-        minWidth: "260px",
-        background: "var(--bg-glass)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderRight: "1px solid var(--border)",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        padding: "28px 16px",
-        position: "sticky",
-        top: 0,
-        height: "100vh",
-        overflowY: "auto",
-        zIndex: 40,
-      }}
+      className="w-[260px] min-w-[260px] bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border-r border-slate-200 dark:border-slate-800/60 min-h-screen flex flex-col py-8 px-4 sticky top-0 h-screen overflow-y-auto z-40"
     >
       {/* ── Logo ── */}
-      <motion.div variants={itemVariants} style={{ marginBottom: "36px", padding: "0 8px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "38px",
-              height: "38px",
-              borderRadius: "10px",
-              background: "var(--grad-primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 4px 16px rgba(99,102,241,0.45)",
-              flexShrink: 0,
-            }}
-          >
-            <Zap size={20} color="white" strokeWidth={2.5} />
+      <motion.div variants={itemVariants} className="mb-10 px-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-[0_4px_16px_rgba(6,182,212,0.4)] relative group overflow-hidden">
+            <div className="absolute inset-0 bg-white/20 blur-md rounded-full transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+            <Zap size={22} className="text-white" strokeWidth={2.5} />
           </div>
 
           <div>
-            <div
-              style={{
-                color: "var(--text-heading)",
-                fontWeight: 800,
-                fontSize: "17px",
-                letterSpacing: "-0.4px",
-                lineHeight: 1.1,
-              }}
-            >
+            <div className="text-slate-900 dark:text-slate-100 font-extrabold text-lg tracking-tight leading-tight">
               HashPilot
             </div>
-            <div
-              style={{
-                fontSize: "11px",
-                color: "var(--text-muted)",
-                fontWeight: 500,
-                marginTop: "2px",
-              }}
-            >
-              AI Benchmark Platform
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 uppercase tracking-wider">
+              Benchmark Core
             </div>
           </div>
         </div>
 
         {/* Version badge */}
-        <div
-          style={{
-            marginTop: "14px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            background: "rgba(99,102,241,0.12)",
-            border: "1px solid rgba(99,102,241,0.25)",
-            borderRadius: "999px",
-            padding: "3px 10px",
-          }}
-        >
-          <span
-            className="dot-pulse"
-            style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: "#10b981",
-              display: "inline-block",
-              flexShrink: 0,
-            }}
-          />
-          <span style={{ fontSize: "11px", color: "#818cf8", fontWeight: 600 }}>
-            v1.0 · Live
-          </span>
+        <div className="mt-4 inline-flex">
+          <Badge variant="indigo" dot={true} className="border-indigo-500/30 bg-indigo-500/5 px-3 py-1">
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold tracking-wide text-[10px] uppercase">v2.0 Beta</span>
+          </Badge>
         </div>
       </motion.div>
 
       {/* ── Section label ── */}
       <motion.div
         variants={itemVariants}
-        style={{
-          fontSize: "10px",
-          fontWeight: 700,
-          color: "var(--text-muted)",
-          letterSpacing: "1.2px",
-          textTransform: "uppercase",
-          padding: "0 12px",
-          marginBottom: "8px",
-        }}
+        className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-[1.2px] uppercase px-3 mb-2"
       >
-        Navigation
+        Platform Overview
       </motion.div>
 
       {/* ── Nav Links ── */}
-      <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
+      <nav className="flex-1 flex flex-col gap-1">
         {navItems.map(({ to, label, icon: Icon }) => {
           const isActive =
             to === "/"
@@ -150,57 +79,29 @@ export default function Sidebar() {
 
           return (
             <motion.div key={to} variants={itemVariants}>
-              <NavLink
-                to={to}
-                style={{ textDecoration: "none" }}
-              >
+              <NavLink to={to} className="outline-none">
                 <motion.div
                   whileHover={{ x: 3 }}
                   transition={{ duration: 0.15 }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "11px",
-                    padding: "10px 12px",
-                    borderRadius: "10px",
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: "14px",
-                    color: isActive ? "white" : "var(--text-body)",
-                    background: isActive
-                      ? "linear-gradient(135deg, rgba(99,102,241,0.28), rgba(139,92,246,0.18))"
-                      : "transparent",
-                    border: isActive
-                      ? "1px solid rgba(99,102,241,0.35)"
-                      : "1px solid transparent",
-                    boxShadow: isActive
-                      ? "0 2px 12px rgba(99,102,241,0.18)"
-                      : "none",
-                    transition: "all 0.18s ease",
-                    position: "relative",
-                  }}
+                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                    isActive 
+                      ? "text-slate-900 dark:text-white bg-gradient-to-r from-cyan-500/10 to-indigo-500/5 border border-cyan-500/20 shadow-[0_2px_12px_rgba(6,182,212,0.1)]" 
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-transparent"
+                  }`}
                 >
                   {/* Active left bar */}
                   {isActive && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        left: 0,
-                        top: "20%",
-                        height: "60%",
-                        width: "3px",
-                        borderRadius: "0 3px 3px 0",
-                        background: "var(--grad-primary)",
-                      }}
+                    <motion.div
+                      layoutId="activeNavIndicator"
+                      className="absolute left-0 top-1/4 h-1/2 w-[3px] rounded-r-md bg-gradient-to-b from-cyan-400 to-indigo-500"
                     />
                   )}
 
                   <Icon
-                    size={16}
-                    style={{
-                      color: isActive ? "#a5b4fc" : "var(--text-muted)",
-                      transition: "color 0.18s",
-                      flexShrink: 0,
-                    }}
+                    size={18}
+                    className={`shrink-0 transition-colors duration-200 ${
+                      isActive ? "text-cyan-500 dark:text-cyan-400" : "text-slate-400 dark:text-slate-500"
+                    }`}
                   />
                   {label}
                 </motion.div>
@@ -213,22 +114,17 @@ export default function Sidebar() {
       {/* ── Bottom status ── */}
       <motion.div
         variants={itemVariants}
-        style={{
-          marginTop: "auto",
-          padding: "14px 12px",
-          background: "rgba(16,185,129,0.07)",
-          border: "1px solid rgba(16,185,129,0.15)",
-          borderRadius: "12px",
-        }}
+        className="mt-auto p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl relative overflow-hidden group"
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <Activity size={13} color="#10b981" />
-          <span style={{ fontSize: "12px", color: "#6ee7b7", fontWeight: 600 }}>
-            System Online
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="relative z-10 flex items-center gap-2 mb-1">
+          <Activity size={14} className="text-emerald-500" />
+          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold tracking-wide">
+            Engine Connected
           </span>
         </div>
-        <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
-          API connected · ready
+        <div className="relative z-10 text-[10px] text-slate-500 leading-tight">
+          WebSockets synced with backend solver.
         </div>
       </motion.div>
     </motion.aside>

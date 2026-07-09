@@ -1,96 +1,66 @@
+import { useState } from "react";
+import { Download, CheckCircle, FileText } from "lucide-react";
+import toast from "react-hot-toast";
 import api from "../api/api";
+import { Button } from "./ui/Button";
 
-export default function DownloadReportButton({
-  difficulty,
-  threads,
-  processes,
-}) {
+export default function DownloadReportButton({ difficulty, threads, processes }) {
+  const [downloading, setDownloading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   async function downloadReport() {
+    setDownloading(true);
+    const toastId = toast.loading("Generating PDF Report...");
 
     try {
-
       const response = await api.get("/report", {
-
-        params: {
-
-          difficulty,
-
-          threads,
-
-          processes,
-
-        },
-
+        params: { difficulty, threads, processes },
         responseType: "blob",
-
       });
 
-      const url = window.URL.createObjectURL(
-        new Blob([response.data])
-      );
-
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-
       link.href = url;
-
-      link.setAttribute(
-        "download",
-        "HashPilot_Report.pdf"
-      );
-
+      link.setAttribute("download", `hashpilot_report_${Date.now()}.pdf`);
       document.body.appendChild(link);
-
       link.click();
+      document.body.removeChild(link);
 
-      link.remove();
-
-      window.URL.revokeObjectURL(url);
-
+      toast.success("Report downloaded successfully!", { id: toastId });
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+      
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to download PDF report.", { id: toastId });
+    } finally {
+      setDownloading(false);
     }
-
-    catch (err) {
-
-      console.error(err);
-
-      alert("Failed to download report.");
-
-    }
-
   }
 
   return (
-
-    <button
-
+    <Button
+      variant={success ? "secondary" : "primary"}
       onClick={downloadReport}
-
-      style={{
-
-        background: "#059669",
-
-        color: "white",
-
-        padding: "14px 28px",
-
-        border: "none",
-
-        borderRadius: "12px",
-
-        cursor: "pointer",
-
-        fontSize: "16px",
-
-        fontWeight: "bold",
-
-      }}
-
+      disabled={downloading}
+      className={`min-w-[200px] shadow-lg transition-all ${success ? "bg-emerald-500 hover:bg-emerald-400 text-slate-900 border-none shadow-[0_0_20px_rgba(16,185,129,0.4)]" : ""}`}
     >
-
-      📄 Download Report
-
-    </button>
-
+      {downloading ? (
+        <>
+          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          Processing...
+        </>
+      ) : success ? (
+        <>
+          <CheckCircle size={18} />
+          Downloaded
+        </>
+      ) : (
+        <>
+          <FileText size={18} />
+          Download PDF Report
+        </>
+      )}
+    </Button>
   );
-
 }

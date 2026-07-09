@@ -16,14 +16,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            message = await websocket.receive_text()
-
-            print("Received:", message)
-
-            await websocket.send_json({
-                "message": "Connected",
-                "received": message,
-            })
+            # Only receive heartbeat messages.
+            await websocket.receive_text()
 
     except WebSocketDisconnect:
 

@@ -1,295 +1,136 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Medal, Zap, Clock, Hash, Table } from "lucide-react";
-
-const RANK_CONFIG = [
-  { bg: "rgba(251,191,36,0.15)", border: "rgba(251,191,36,0.35)", color: "#fbbf24", icon: <Trophy size={13} /> },
-  { bg: "rgba(148,163,184,0.12)", border: "rgba(148,163,184,0.25)", color: "#94a3b8", icon: <Medal size={13} /> },
-  { bg: "rgba(180,83,9,0.12)",   border: "rgba(180,83,9,0.25)",   color: "#b45309", icon: <Medal size={13} /> },
-];
-
-const rowVariants = {
-  hidden:  { opacity: 0, x: -12 },
-  visible: (i) => ({ opacity: 1, x: 0, transition: { delay: i * 0.06, duration: 0.3 } }),
-};
+import { useState } from "react";
+import { Trophy, Search, Download, ChevronLeft, ChevronRight, Hash, Clock, Zap } from "lucide-react";
+import { Card } from "./ui/Card";
+import { Badge } from "./ui/Badge";
+import { Button } from "./ui/Button";
 
 export default function BenchmarkTable({ results }) {
-  if (!results || results.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        style={{
-          background: "var(--bg-glass)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          borderRadius: "20px",
-          border: "1px solid var(--border)",
-          padding: "64px 40px",
-          textAlign: "center",
-          marginTop: "28px",
-        }}
-      >
-        <div
-          style={{
-            width: "56px",
-            height: "56px",
-            borderRadius: "16px",
-            background: "rgba(99,102,241,0.1)",
-            border: "1px solid rgba(99,102,241,0.2)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 16px",
-          }}
-        >
-          <Table size={24} color="#6366f1" />
-        </div>
-        <h3 style={{ color: "var(--text-heading)", marginBottom: "8px", fontSize: "16px" }}>
-          No Results Yet
-        </h3>
-        <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
-          Run a benchmark to populate results here.
-        </p>
-      </motion.div>
-    );
-  }
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const sorted = [...results].sort((a, b) => b.hashrate - a.hashrate);
-  const winnerStrategy = sorted[0].strategy;
+  if (!results || results.length === 0) return null;
+
+  const winner = results.reduce((a, b) => (a.hashrate > b.hashrate ? a : b), results[0]);
+
+  const filteredResults = results.filter((r) =>
+    r.strategy.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: 0.25 }}
-      style={{
-        background: "var(--bg-glass)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: "20px",
-        border: "1px solid var(--border)",
-        boxShadow: "var(--shadow-md)",
-        marginTop: "28px",
-        overflow: "hidden",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          padding: "18px 24px",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          background: "rgba(99,102,241,0.05)",
-        }}
-      >
-        <div
-          style={{
-            width: "30px",
-            height: "30px",
-            borderRadius: "8px",
-            background: "rgba(99,102,241,0.15)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "1px solid rgba(99,102,241,0.25)",
-          }}
-        >
-          <Table size={14} color="#a5b4fc" />
+    <Card className="overflow-hidden" animate>
+      {/* Header Controls */}
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-50 dark:bg-slate-900/50">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 m-0">Detailed Results</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 m-0 mt-1">Raw telemetry and execution records</p>
         </div>
-        <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-heading)" }}>
-          Benchmark Results
-        </span>
-        <span
-          style={{
-            marginLeft: "auto",
-            fontSize: "11px",
-            fontWeight: 600,
-            color: "var(--text-muted)",
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid var(--border)",
-            borderRadius: "999px",
-            padding: "2px 10px",
-          }}
-        >
-          {results.length} strategies
-        </span>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          {/* Search */}
+          <div className="flex items-center bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-colors px-3 py-2 rounded-xl gap-2 text-slate-500 dark:text-slate-400 focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/20 w-full md:w-64">
+            <Search size={16} />
+            <input
+              type="text"
+              placeholder="Filter strategy..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-transparent border-none text-slate-900 dark:text-slate-200 outline-none w-full text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            />
+          </div>
+          
+          {/* Export Button */}
+          <Button variant="outline" className="hidden sm:flex">
+            <Download size={16} />
+            Export
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr style={{ background: "rgba(0,0,0,0.2)" }}>
-              {["Rank", "Strategy", "Runtime", "Attempts", "Hash Rate", "Status"].map((h) => (
-                <th
-                  key={h}
-                  style={{
-                    color: "var(--text-muted)",
-                    padding: "12px 20px",
-                    textAlign: "left",
-                    fontWeight: 700,
-                    fontSize: "11px",
-                    letterSpacing: "0.8px",
-                    textTransform: "uppercase",
-                    whiteSpace: "nowrap",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  {h}
-                </th>
-              ))}
+            <tr className="bg-slate-100 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold sticky top-0">
+              <th className="py-4 px-6 font-semibold">Strategy</th>
+              <th className="py-4 px-6 font-semibold">Nonce</th>
+              <th className="py-4 px-6 font-semibold">Hash Rate</th>
+              <th className="py-4 px-6 font-semibold">Attempts</th>
+              <th className="py-4 px-6 font-semibold text-right">Time (s)</th>
             </tr>
           </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800/50">
+            {filteredResults.map((result, index) => {
+              const isWinner = result.winner !== undefined 
+                ? result.winner 
+                : (winner && winner.strategy === result.strategy);
+              
+              const displayTime = result.time ?? result.runtime;
 
-          <tbody>
-            <AnimatePresence>
-              {sorted.map((item, index) => {
-                const runtime    = item.time ?? item.runtime;
-                const isWinner   = item.strategy === winnerStrategy;
-                const rankConfig = RANK_CONFIG[index] ?? RANK_CONFIG[2];
-
-                return (
-                  <motion.tr
-                    key={`${item.strategy}-${index}`}
-                    custom={index}
-                    variants={rowVariants}
-                    initial="hidden"
-                    animate="visible"
-                    style={{
-                      borderBottom: "1px solid var(--border)",
-                      background: isWinner
-                        ? "rgba(16,185,129,0.04)"
-                        : "transparent",
-                      transition: "background 0.15s",
-                      cursor: "default",
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = isWinner
-                      ? "rgba(16,185,129,0.08)"
-                      : "rgba(255,255,255,0.03)"}
-                    onMouseLeave={e => e.currentTarget.style.background = isWinner
-                      ? "rgba(16,185,129,0.04)"
-                      : "transparent"}
-                  >
-                    {/* Rank */}
-                    <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          background: rankConfig.bg,
-                          border: `1px solid ${rankConfig.border}`,
-                          borderRadius: "6px",
-                          padding: "3px 9px",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          color: rankConfig.color,
-                        }}
-                      >
-                        {rankConfig.icon}
-                        #{index + 1}
-                      </span>
-                    </td>
-
-                    {/* Strategy */}
-                    <td style={{ padding: "14px 20px" }}>
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          fontSize: "14px",
-                          color: isWinner ? "#6ee7b7" : "var(--text-heading)",
-                        }}
-                      >
-                        {item.strategy}
-                      </span>
-                    </td>
-
-                    {/* Runtime */}
-                    <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Clock size={12} color="#38bdf8" />
-                        <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-body)", fontVariantNumeric: "tabular-nums" }}>
-                          {runtime.toFixed(4)} s
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Attempts */}
-                    <td style={{ padding: "14px 20px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Hash size={12} color="#94a3b8" />
-                        <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-body)", fontVariantNumeric: "tabular-nums" }}>
-                          {item.attempts.toLocaleString()}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Hash Rate */}
-                    <td style={{ padding: "14px 20px", whiteSpace: "nowrap" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Zap size={12} color="#10b981" />
-                        <span
-                          style={{
-                            fontSize: "13px",
-                            fontWeight: 700,
-                            color: isWinner ? "#10b981" : "var(--text-body)",
-                            fontVariantNumeric: "tabular-nums",
-                          }}
-                        >
-                          {Math.round(item.hashrate).toLocaleString()} H/s
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Status badge */}
-                    <td style={{ padding: "14px 20px" }}>
-                      {isWinner ? (
-                        <span
-                          style={{
-                            background: "rgba(16,185,129,0.15)",
-                            color: "#6ee7b7",
-                            padding: "5px 12px",
-                            borderRadius: "999px",
-                            fontWeight: 700,
-                            fontSize: "12px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            border: "1px solid rgba(16,185,129,0.3)",
-                          }}
-                        >
-                          <Trophy size={11} />
-                          Winner
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            background: "rgba(100,116,139,0.12)",
-                            color: "var(--text-muted)",
-                            padding: "5px 12px",
-                            borderRadius: "999px",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            border: "1px solid rgba(100,116,139,0.2)",
-                          }}
-                        >
-                          <Medal size={11} />
-                          Runner Up
-                        </span>
+              return (
+                <tr
+                  key={result.id || `${result.strategy}-${index}`}
+                  className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
+                    isWinner ? "bg-cyan-500/5" : ""
+                  }`}
+                >
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      {isWinner && (
+                        <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                          <Trophy size={12} />
+                        </div>
                       )}
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </AnimatePresence>
+                      <span className={`font-semibold ${isWinner ? "text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-slate-200"}`}>
+                        {result.strategy}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 text-slate-700 dark:text-slate-300 font-mono text-sm">
+                    {result.nonce?.toLocaleString() ?? "-"}
+                  </td>
+                  <td className="py-4 px-6">
+                    <Badge variant={isWinner ? "success" : "default"} className="font-mono">
+                      <Zap size={10} className="mr-0.5" />
+                      {Math.round(result.hashrate).toLocaleString()} H/s
+                    </Badge>
+                  </td>
+                  <td className="py-4 px-6 text-slate-700 dark:text-slate-300 font-mono text-sm">
+                    {result.attempts?.toLocaleString()}
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    <Badge variant="indigo" className="font-mono">
+                      <Clock size={10} className="mr-0.5" />
+                      {displayTime?.toFixed(4)}
+                    </Badge>
+                  </td>
+                </tr>
+              );
+            })}
+            
+            {filteredResults.length === 0 && (
+              <tr>
+                <td colSpan="5" className="py-12 text-center text-slate-500">
+                  No strategies match your filter.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-    </motion.div>
+
+      {/* Pagination UI */}
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 flex items-center justify-between text-sm">
+        <div className="text-slate-500">
+          Showing <span className="font-semibold text-slate-900 dark:text-slate-300">{filteredResults.length}</span> of <span className="font-semibold text-slate-900 dark:text-slate-300">{results.length}</span> entries
+        </div>
+        <div className="flex gap-2">
+          <button className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50">
+            <ChevronLeft size={16} />
+          </button>
+          <button className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-50">
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+    </Card>
   );
 }

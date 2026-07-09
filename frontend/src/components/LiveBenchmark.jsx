@@ -1,4 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Activity,
+  Clock,
+  Hash,
+  Zap,
+  CheckCircle2,
+  PlayCircle,
+  Clock4,
+} from "lucide-react";
+import { Card } from "./ui/Card";
 
 const STRATEGIES = [
   "SequentialStrategy",
@@ -8,6 +19,8 @@ const STRATEGIES = [
 ];
 
 export default function LiveBenchmark({ onEvent }) {
+  const callbackRef = useRef(onEvent);
+
   const [progress, setProgress] = useState(0);
 
   const [status, setStatus] = useState({
@@ -25,19 +38,25 @@ export default function LiveBenchmark({ onEvent }) {
     elapsed: 0,
   });
 
+  // Keep latest callback
+  useEffect(() => {
+    callbackRef.current = onEvent;
+  }, [onEvent]);
+
+  // Create websocket only once
   useEffect(() => {
     const socket = new WebSocket("ws://127.0.0.1:8000/ws/benchmark");
 
     socket.onopen = () => {
       console.log("✅ WebSocket Connected");
-      socket.send("connect");
     };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      console.log("WS:", data);
-      if (onEvent) onEvent(data);
+      if (callbackRef.current) {
+        callbackRef.current(data);
+      }
 
       switch (data.event) {
         case "strategy_started":
@@ -71,103 +90,208 @@ export default function LiveBenchmark({ onEvent }) {
       }
     };
 
+    socket.onerror = (err) => {
+      // Intentionally suppressed to keep console clean
+    };
+
     socket.onclose = () => {
       console.log("❌ WebSocket Closed");
     };
 
-    return () => socket.close();
+    return () => {
+      if (socket) {
+        if (socket.readyState === WebSocket.CONNECTING) {
+          // Wait for connection to open before closing to prevent browser warnings
+          socket.onopen = () => socket.close();
+        } else if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        }
+      }
+    };
   }, []);
 
-  return (
-    <div
-      style={{
-        background: "#111827",
-        padding: "25px",
-        borderRadius: "15px",
-        marginBottom: "30px",
-      }}
-    >
-      <h2 style={{ marginBottom: "20px" }}>
-        ⚡ Live Benchmark Monitor
-      </h2>
+  const StatusIcon = ({ state }) => {
+    if (state === "Completed")
+      return <CheckCircle2 size={16} className="text-emerald-500" />;
 
-      {/* Progress Bar */}
-      <div
-        style={{
-          width: "100%",
-          height: "18px",
-          background: "#1e293b",
-          borderRadius: "10px",
-          overflow: "hidden",
-          marginBottom: "25px",
-        }}
-      >
-        <div
-          style={{
-            width: `${progress}%`,
-            height: "100%",
-            background: "#06b6d4",
-            transition: "0.4s",
-          }}
+    if (state === "Running")
+      return (
+        <PlayCircle
+          size={16}
+          className="text-cyan-500 animate-pulse"
         />
+      );
+
+    return <Clock4 size={16} className="text-slate-400 dark:text-slate-600" />;
+  };
+
+  const StatusText = ({ state }) => {
+    if (state === "Completed")
+      return (
+        <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+          Completed
+        </span>
+      );
+
+    if (state === "Running")
+      return (
+        <span className="text-cyan-600 dark:text-cyan-400 font-medium">
+          Running
+        </span>
+      );
+
+    return (
+      <span className="text-slate-500 font-medium">
+        Waiting
+      </span>
+    );
+  };
+
+  return (
+    <Card className="mb-8 overflow-hidden" animate>
+
+      {/* Header */}
+
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-6 flex items-center justify-between">
+
+        <div className="flex items-center gap-3">
+
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+
+            <Activity size={20} className="text-cyan-600 dark:text-cyan-400" />
+
+          </div>
+
+          <div>
+
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              Live Benchmark Monitor
+            </h2>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Real-time solver metrics
+            </p>
+
+          </div>
+
+        </div>
+
+        <div className="text-right">
+
+          <div className="text-3xl font-black text-slate-900 dark:text-white">
+            {progress}%
+          </div>
+
+          <div className="text-xs text-slate-500 uppercase">
+            Overall Progress
+          </div>
+
+        </div>
+
       </div>
 
-      {STRATEGIES.map((strategy) => (
-        <div
-          key={strategy}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "12px 0",
-            borderBottom: "1px solid #334155",
-          }}
-        >
-          <strong>{strategy.replace("Strategy", "")}</strong>
+      {/* Progress */}
 
-          <span>
-            {status[strategy] === "Completed"
-              ? "🟢 Completed"
-              : status[strategy] === "Running"
-                ? "🟡 Running"
-                : "⚪ Waiting"}
-          </span>
+      <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800">
+
+        <motion.div
+          className="h-full bg-cyan-500"
+          animate={{ width: `${progress}%` }}
+        />
+
+      </div>
+
+      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Strategies */}
+
+        <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+
+          {STRATEGIES.map((strategy) => {
+
+            const state = status[strategy];
+
+            return (
+
+              <div
+                key={strategy}
+                className="flex items-center justify-between p-3"
+              >
+
+                <div className="flex items-center gap-2">
+
+                  <StatusIcon state={state} />
+
+                  <span className="text-slate-900 dark:text-slate-200">
+
+                    {strategy.replace("Strategy", "")}
+
+                  </span>
+
+                </div>
+
+                <StatusText state={state} />
+
+              </div>
+
+            );
+
+          })}
+
         </div>
-      ))}
 
-      <div
-        style={{
-          marginTop: "25px",
-          background: "#0f172a",
-          padding: "20px",
-          borderRadius: "10px",
-        }}
-      >
-        <h3>📊 Live Statistics</h3>
+        {/* Live Metrics */}
 
-        <p>
-          <strong>Current Strategy:</strong>{" "}
-          {liveData.strategy || "-"}
-        </p>
+        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
 
-        <p>
-          <strong>Attempts:</strong>{" "}
-          {liveData.attempts.toLocaleString()}
-        </p>
+          <Metric
+            title="Active Strategy"
+            value={
+              liveData.strategy
+                ? liveData.strategy.replace("Strategy", "")
+                : "Standby"
+            }
+          />
 
-        <p>
-          <strong>Current Nonce:</strong>{" "}
-          {liveData.nonce.toLocaleString()}
-        </p>
+          <Metric
+            title="Hash Rate"
+            value={`${Math.round(
+              liveData.hashrate
+            ).toLocaleString()} H/s`}
+          />
 
-        <p>
-          <strong>Hash Rate:</strong>{" "}
-          {Math.round(liveData.hashrate).toLocaleString()} H/s
-        </p>
+          <Metric
+            title="Attempts"
+            value={liveData.attempts.toLocaleString()}
+          />
 
-        <p>
-          <strong>Elapsed:</strong>{" "}
-          {liveData.elapsed} s
-        </p>
+          <Metric
+            title="Nonce"
+            value={liveData.nonce.toLocaleString()}
+          />
+
+          <Metric
+            title="Elapsed"
+            value={`${liveData.elapsed.toFixed(2)} sec`}
+          />
+
+        </div>
+
+      </div>
+
+    </Card>
+  );
+}
+
+function Metric({ title, value }) {
+  return (
+    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+      <div className="text-xs uppercase text-slate-500 mb-2">
+        {title}
+      </div>
+
+      <div className="text-2xl font-bold text-slate-900 dark:text-white">
+        {value}
       </div>
     </div>
   );

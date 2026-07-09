@@ -28,3 +28,17 @@ class Benchmark(Base):
     runtime = Column(Float, nullable=False)
 
     winner = Column(Boolean, default=False)
+
+    # ---------- ML Features ----------
+
+    cpu_cores = Column(Integer)
+
+    logical_threads = Column(Integer)
+
+    ram_gb = Column(Float)
+
+    os = Column(String)
+
+    user_threads = Column(Integer)
+
+    user_processes = Column(Integer)

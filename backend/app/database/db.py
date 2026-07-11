@@ -12,10 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 default_db = BASE_DIR / "hashpilot.db"
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    f"sqlite:///{default_db}"
-)
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{default_db}")
 
 if DATABASE_URL.startswith("sqlite:///"):
 

@@ -1,24 +1,43 @@
 version: "3.9"
 
 services:
-
+  # ── Backend API ─────────────────────────────────────────────────────────────
   backend:
-    build: ./backend
-
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hashpilot_backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
-
+    environment:
+      - DATABASE_URL=sqlite:///./hashpilot.db
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - LOG_LEVEL=INFO
     volumes:
-      - ./backend:/app
+      # Persist SQLite database between container restarts.
+      - hashpilot_db:/app/hashpilot.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
+  # ── Frontend (production build) ──────────────────────────────────────────────
   frontend:
-    build: ./frontend
-
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hashpilot_frontend
+    restart: unless-stopped
     ports:
-      - "5173:5173"
-
-    volumes:
-      - ./frontend:/app
-
+      - "3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+
+volumes:
+  hashpilot_db:

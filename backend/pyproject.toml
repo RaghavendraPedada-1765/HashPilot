@@ -1,0 +1,26 @@
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+extend-exclude = '''
+/(
+  \.venv
+  | __pycache__
+  | \.pytest_cache
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_glob = [".venv/*", "__pycache__/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+exclude = [".venv", "__pycache__", ".pytest_cache", "*.pkl"]

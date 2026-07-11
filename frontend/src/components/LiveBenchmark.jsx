@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+/**
+ * LiveBenchmark — Grafana-style real-time monitor
+ *
+ * Consumes the shared BenchmarkSocketContext instead of opening its own
+ * WebSocket (that was the root cause of the "Invalid Frame Header" bug).
+ */
+
+import { useCallback, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -14,6 +21,7 @@ import {
 } from "lucide-react";
 import { Card } from "./ui/Card";
 import { Badge } from "./ui/Badge";
+import useBenchmarkSocket from "../hooks/useBenchmarkSocket";
 
 const STRATEGIES = [
   "SequentialStrategy",
@@ -22,82 +30,82 @@ const STRATEGIES = [
   "MultiProcessStrategy",
 ];
 
-export default function LiveBenchmark({ onEvent }) {
-  const callbackRef = useRef(onEvent);
-  const [connectionState, setConnectionState] = useState("connecting");
-  const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState({
-    SequentialStrategy: "Waiting",
-    RandomStrategy: "Waiting",
-    MultiThreadStrategy: "Waiting",
-    MultiProcessStrategy: "Waiting",
-  });
-  const [liveData, setLiveData] = useState({
-    strategy: "",
-    attempts: 0,
-    nonce: 0,
-    hashrate: 0,
-    elapsed: 0,
-  });
+const INITIAL_STATUS = {
+  SequentialStrategy: "Waiting",
+  RandomStrategy: "Waiting",
+  MultiThreadStrategy: "Waiting",
+  MultiProcessStrategy: "Waiting",
+};
 
+const INITIAL_LIVE_DATA = {
+  strategy: "",
+  attempts: 0,
+  nonce: 0,
+  hashrate: 0,
+  elapsed: 0,
+};
+
+export default function LiveBenchmark({ onEvent }) {
+  // Keep onEvent in a ref so the subscribe callback never needs re-registering.
+  const onEventRef = useRef(onEvent);
+  
   useEffect(() => {
-    callbackRef.current = onEvent;
+    onEventRef.current = onEvent;
   }, [onEvent]);
 
-  useEffect(() => {
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws/benchmark");
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState(INITIAL_STATUS);
+  const [liveData, setLiveData] = useState(INITIAL_LIVE_DATA);
 
-    socket.onopen = () => setConnectionState("connected");
+  const handleMessage = useCallback((data) => {
+    // Forward every event to the parent (Dashboard) for results state.
+    if (onEventRef.current) {
+      onEventRef.current(data);
+    }
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    switch (data.event) {
+      case "strategy_started":
+        setStatus((prev) => ({ ...prev, [data.strategy]: "Running" }));
+        setProgress(data.progress ?? 0);
+        // Reset live metrics for the new strategy.
+        setLiveData({
+          strategy: data.strategy,
+          attempts: 0,
+          nonce: 0,
+          hashrate: 0,
+          elapsed: 0,
+        });
+        break;
 
-      if (callbackRef.current) {
-        callbackRef.current(data);
-      }
+      case "progress":
+        setLiveData({
+          strategy: data.strategy,
+          attempts: data.attempts ?? 0,
+          nonce: data.nonce ?? 0,
+          hashrate: data.hashrate ?? 0,
+          elapsed: data.elapsed ?? 0,
+        });
+        break;
 
-      switch (data.event) {
-        case "strategy_started":
-          setStatus((prev) => ({ ...prev, [data.strategy]: "Running" }));
-          setProgress(data.progress);
-          break;
+      case "strategy_completed":
+        setStatus((prev) => ({ ...prev, [data.strategy]: "Completed" }));
+        setProgress(data.progress ?? 0);
+        break;
 
-        case "progress":
-          setLiveData({
-            strategy: data.strategy,
-            attempts: data.attempts,
-            nonce: data.nonce,
-            hashrate: data.hashrate,
-            elapsed: data.elapsed,
-          });
-          break;
-
-        case "strategy_completed":
-          setStatus((prev) => ({ ...prev, [data.strategy]: "Completed" }));
-          setProgress(data.progress);
-          break;
-
-        default:
-          break;
-      }
-    };
-
-    socket.onerror = () => setConnectionState("degraded");
-    socket.onclose = () => setConnectionState("offline");
-
-    return () => {
-      if (socket.readyState === WebSocket.CONNECTING) {
-        socket.onopen = () => socket.close();
-      } else if (socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
+      default:
+        break;
+    }
   }, []);
 
-  const activeStrategy = liveData.strategy ? liveData.strategy.replace("Strategy", "") : "Standby";
+  const { connectionState } = useBenchmarkSocket(handleMessage);
+
+  const activeStrategy = liveData.strategy
+    ? liveData.strategy.replace("Strategy", "")
+    : "Standby";
 
   return (
     <Card className="h-full overflow-hidden" animate>
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="relative overflow-hidden border-b border-slate-200/80 p-6 dark:border-white/10">
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(34,211,238,0.10),transparent_42%,rgba(99,102,241,0.10))]" />
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -106,20 +114,29 @@ export default function LiveBenchmark({ onEvent }) {
               <Activity size={22} />
             </div>
             <div>
-              <h2 className="m-0 text-lg font-black text-slate-950 dark:text-white">Live Benchmark Monitor</h2>
-              <p className="m-0 mt-1 text-xs text-slate-500">Grafana-style solver telemetry</p>
+              <h2 className="m-0 text-lg font-black text-slate-950 dark:text-white">
+                Live Benchmark Monitor
+              </h2>
+              <p className="m-0 mt-1 text-xs text-slate-500">
+                Grafana-style solver telemetry
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <ConnectionBadge state={connectionState} />
             <div className="text-right">
-              <div className="text-3xl font-black tabular-nums text-slate-950 dark:text-white">{progress}%</div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Progress</div>
+              <div className="text-3xl font-black tabular-nums text-slate-950 dark:text-white">
+                {progress}%
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Progress
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* ── Progress bar ────────────────────────────────────────────────── */}
       <div className="h-1.5 w-full bg-slate-200 dark:bg-white/10">
         <motion.div
           className="h-full rounded-r-full bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400"
@@ -128,7 +145,9 @@ export default function LiveBenchmark({ onEvent }) {
         />
       </div>
 
+      {/* ── Body ────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-5 p-6 lg:grid-cols-[0.85fr_1.15fr]">
+        {/* Strategy Timeline */}
         <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
           <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
             <Radio size={14} />
@@ -139,7 +158,9 @@ export default function LiveBenchmark({ onEvent }) {
               const state = status[strategy];
               return (
                 <div key={strategy} className="relative flex items-center gap-3">
-                  {index < STRATEGIES.length - 1 && <div className="absolute left-[15px] top-8 h-7 w-px bg-slate-200 dark:bg-white/10" />}
+                  {index < STRATEGIES.length - 1 && (
+                    <div className="absolute left-[15px] top-8 h-7 w-px bg-slate-200 dark:bg-white/10" />
+                  )}
                   <StatusIcon state={state} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-bold text-slate-950 dark:text-white">
@@ -153,17 +174,29 @@ export default function LiveBenchmark({ onEvent }) {
           </div>
         </div>
 
+        {/* Live Metrics Grid */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Metric icon={Gauge} title="Current Strategy" value={activeStrategy} />
-          <Metric icon={Zap} title="Hash Rate" value={`${Math.round(liveData.hashrate).toLocaleString()} H/s`} accent />
+          <Metric
+            icon={Zap}
+            title="Hash Rate"
+            value={`${Math.round(liveData.hashrate).toLocaleString()} H/s`}
+            accent
+          />
           <Metric icon={Hash} title="Attempts" value={liveData.attempts.toLocaleString()} />
           <Metric icon={Hash} title="Nonce" value={liveData.nonce.toLocaleString()} />
-          <Metric icon={Clock} title="Elapsed Time" value={`${liveData.elapsed.toFixed(2)} sec`} />
+          <Metric
+            icon={Clock}
+            title="Elapsed Time"
+            value={`${Number(liveData.elapsed).toFixed(2)} sec`}
+          />
         </div>
       </div>
     </Card>
   );
 }
+
+// ─── Sub-components ─────────────────────────────────────────────────────────
 
 function ConnectionBadge({ state }) {
   const config = {
@@ -171,7 +204,7 @@ function ConnectionBadge({ state }) {
     connecting: { label: "Connecting", variant: "warning" },
     degraded: { label: "Degraded", variant: "warning" },
     offline: { label: "Offline", variant: "danger" },
-  }[state];
+  }[state] ?? { label: state, variant: "default" };
 
   return (
     <Badge variant={config.variant} dot className="capitalize">
@@ -231,10 +264,15 @@ function Metric({ icon: Icon, title, value, accent = false }) {
       }`}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">{title}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+          {title}
+        </span>
         <Icon size={15} className={accent ? "text-cyan-300" : "text-slate-400"} />
       </div>
-      <div className="truncate text-xl font-black tabular-nums text-slate-950 dark:text-white" title={value}>
+      <div
+        className="truncate text-xl font-black tabular-nums text-slate-950 dark:text-white"
+        title={value}
+      >
         {value}
       </div>
     </motion.div>

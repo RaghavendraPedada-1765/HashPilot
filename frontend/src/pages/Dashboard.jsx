@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import api from "../api/api";
@@ -19,7 +19,6 @@ import LiveBenchmark from "../components/LiveBenchmark";
 import { Trophy, Zap, Clock, Hash } from "lucide-react";
 
 export default function Dashboard() {
-
   const [difficulty, setDifficulty] = useState(4);
   const [threads, setThreads] = useState(4);
   const [processes, setProcesses] = useState(4);
@@ -33,9 +32,13 @@ export default function Dashboard() {
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState(0);
 
-  // AI Prediction
+  /** AI Prediction from the ML model (before benchmark runs) */
   const [prediction, setPrediction] = useState(null);
 
+  /** Actual winner after benchmark completes — used for Predicted vs Actual */
+  const [actualWinner, setActualWinner] = useState(null);
+
+  // ── System info ────────────────────────────────────────────────────────────
   useEffect(() => {
     async function loadSystemInfo() {
       try {
@@ -45,332 +48,188 @@ export default function Dashboard() {
         console.error("System Info Error:", error);
       }
     }
-
     loadSystemInfo();
   }, []);
 
-  // ============================
-  // AI Prediction
-  // ============================
+  // ── AI Prediction (re-fetched whenever params change) ─────────────────────
   useEffect(() => {
+    let cancelled = false;
 
     async function fetchPrediction() {
-
       try {
-
         const response = await api.post("/predict/", {
-
           difficulty,
-
           threads,
-
           processes,
-
         });
-
-        setPrediction(response.data);
-
+        if (!cancelled) setPrediction(response.data);
       } catch (error) {
-
         console.error("Prediction Error:", error);
-
       }
-
     }
 
     fetchPrediction();
-
+    return () => {
+      cancelled = true;
+    };
   }, [difficulty, threads, processes]);
 
+  // ── Run benchmark ──────────────────────────────────────────────────────────
   async function runBenchmark() {
-
     setLoading(true);
     setProgress(0);
     setStage(0);
     setResults([]);
+    setActualWinner(null);
+
+    const toastId = toast.loading("Running benchmark…");
 
     try {
-
       const response = await api.get("/benchmark", {
-
-        params: {
-
-          difficulty,
-
-          threads,
-
-          processes,
-
-        },
-
+        params: { difficulty, threads, processes },
       });
 
-      setResults(response.data.results);
+      const { results: newResults, analysis: newAnalysis } = response.data;
 
-      setAnalysis(response.data.analysis);
-
+      setResults(newResults);
+      setAnalysis(newAnalysis);
       setProgress(100);
-
       setStage(4);
 
-    }
+      const winner = newResults.reduce((a, b) =>
+        a.hashrate > b.hashrate ? a : b,
+        newResults[0]
+      );
+      setActualWinner(winner);
 
-    catch (error) {
-
+      toast.success(
+        `Benchmark complete! Winner: ${winner.strategy.replace("Strategy", "")}`,
+        { id: toastId, duration: 4000 }
+      );
+    } catch (error) {
       console.error(error);
-
-      toast.error("Benchmark failed. Please check the backend connection and try again.");
-
+      toast.error(
+        "Benchmark failed. Check the backend connection and try again.",
+        { id: toastId }
+      );
+    } finally {
+      setTimeout(() => setLoading(false), 500);
     }
-
-    finally {
-
-      setTimeout(() => {
-
-        setLoading(false);
-
-      }, 500);
-
-    }
-
   }
 
-  const handleWSEvent = (data) => {
-
+  // ── WebSocket event handler ────────────────────────────────────────────────
+  const handleWSEvent = useCallback((data) => {
     if (data.event === "strategy_started") {
-
-      setProgress(data.progress);
-
-      setStage(data.current - 1);
-
-      setResults(prev => {
-
-        const filtered = prev.filter(
-
-          r => r.strategy !== data.strategy
-
-        );
-
+      setProgress(data.progress ?? 0);
+      setStage((data.current ?? 1) - 1);
+      setResults((prev) => {
+        const filtered = prev.filter((r) => r.strategy !== data.strategy);
         return [
-
           ...filtered,
-
-          {
-
-            strategy: data.strategy,
-
-            hashrate: 0,
-
-            attempts: 0,
-
-            time: 0,
-
-          },
-
+          { strategy: data.strategy, hashrate: 0, attempts: 0, time: 0 },
         ];
-
       });
-
-    }
-
-    else if (data.event === "progress") {
-
-      setResults(prev =>
-
-        prev.map(r =>
-
+    } else if (data.event === "progress") {
+      setResults((prev) =>
+        prev.map((r) =>
           r.strategy === data.strategy
-
-            ? {
-
-              ...r,
-
-              hashrate: data.hashrate,
-
-              attempts: data.attempts,
-
-              time: data.elapsed,
-
-            }
-
+            ? { ...r, hashrate: data.hashrate, attempts: data.attempts, time: data.elapsed }
             : r
-
         )
-
       );
-
-    }
-
-    else if (data.event === "strategy_completed") {
-
-      setProgress(data.progress);
-
-      setStage(data.current);
-
-      setResults(prev => {
-
-        const filtered = prev.filter(
-
-          r => r.strategy !== data.strategy
-
-        );
-
-        return [
-
-          ...filtered,
-
-          data.result,
-
-        ];
-
+    } else if (data.event === "strategy_completed") {
+      setProgress(data.progress ?? 0);
+      setStage(data.current ?? 0);
+      setResults((prev) => {
+        const filtered = prev.filter((r) => r.strategy !== data.strategy);
+        return [...filtered, data.result];
       });
-
     }
+  }, []);
 
-  };
-
+  // ── Derived: winner for stat cards ─────────────────────────────────────────
   const winner =
     results.length > 0
-      ? results.reduce(
-        (a, b) =>
-          a.hashrate > b.hashrate ? a : b,
-        results[0]
-      )
+      ? results.reduce((a, b) => (a.hashrate > b.hashrate ? a : b), results[0])
       : null;
 
   return (
-
     <Layout>
-
       <Hero />
 
       <AIRecommendation analysis={analysis} />
 
+      {/* Live Monitor + AI Prediction */}
       <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6 mb-8">
         <LiveBenchmark onEvent={handleWSEvent} />
-        <AIPredictionCard prediction={prediction} />
+        {/*
+          Pass actualWinner so the card can compare Predicted vs Actual
+          once a benchmark run has completed.
+        */}
+        <AIPredictionCard prediction={prediction} actualWinner={actualWinner} />
       </div>
 
-      <ProgressPanel
-
-        loading={loading}
-
-        progress={progress}
-
-        stage={stage}
-
-      />
+      <ProgressPanel loading={loading} progress={progress} stage={stage} />
 
       <ControlPanel
-
         difficulty={difficulty}
-
         setDifficulty={setDifficulty}
-
         threads={threads}
-
         setThreads={setThreads}
-
         processes={processes}
-
         setProcesses={setProcesses}
-
         loading={loading}
-
         onRun={runBenchmark}
-
       />
 
       <SystemInfo info={systemInfo} />
 
       <div className="flex justify-center mb-8">
-
         <DownloadReportButton
-
           difficulty={difficulty}
-
           threads={threads}
-
           processes={processes}
-
         />
-
       </div>
 
       {winner && (
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
           <StatCard
-
             title="Winner"
-
             value={winner.strategy}
-
             icon={<Trophy size={20} />}
-
             color="#10b981"
-
             delay={0}
-
           />
-
           <StatCard
-
             title="Hash Rate"
-
             value={winner.hashrate.toFixed(2)}
-
             icon={<Zap size={20} />}
-
             color="#06b6d4"
-
             delay={0.08}
-
           />
-
           <StatCard
-
             title="Attempts"
-
             value={winner.attempts.toLocaleString()}
-
             icon={<Hash size={20} />}
-
             color="#f59e0b"
-
             delay={0.16}
-
           />
-
           <StatCard
-
             title="Runtime"
-
             value={`${winner.time.toFixed(3)} s`}
-
             icon={<Clock size={20} />}
-
             color="#8b5cf6"
-
             delay={0.24}
-
           />
-
         </div>
-
       )}
 
       <div className="mb-8">
-
         <PerformanceChart results={results} />
-
       </div>
 
       <BenchmarkTable results={results} />
-
     </Layout>
-
   );
-
 }

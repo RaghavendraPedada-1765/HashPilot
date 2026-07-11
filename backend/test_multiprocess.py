@@ -10,9 +10,7 @@ def main():
         difficulty=4,
     )
 
-    solver = Solver(
-        MultiProcessStrategy(processes=4)
-    )
+    solver = Solver(MultiProcessStrategy(processes=4))
 
     result = solver.solve(puzzle)
 

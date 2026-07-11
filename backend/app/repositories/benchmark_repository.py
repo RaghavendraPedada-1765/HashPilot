@@ -21,19 +21,12 @@ class BenchmarkRepository:
         for result in results:
 
             record = Benchmark(
-
                 strategy=result["strategy"],
-
                 difficulty=difficulty,
-
                 attempts=result["attempts"],
-
                 hashrate=result["hashrate"],
-
                 runtime=result["time"],
-
                 winner=result["strategy"] == winner["strategy"],
-
             )
 
             db.add(record)

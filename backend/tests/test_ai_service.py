@@ -6,14 +6,32 @@ without requiring a real ML model to be present.
 """
 
 import pytest
+
 from app.services.ai_service import AIService
 
-
 MOCK_RESULTS = [
-    {"strategy": "SequentialStrategy",   "hashrate": 1000, "attempts": 500, "time": 2.0, "nonce": 123},
-    {"strategy": "RandomStrategy",        "hashrate": 800,  "attempts": 700, "time": 3.5, "nonce": 456},
-    {"strategy": "MultiThreadStrategy",   "hashrate": 3000, "attempts": 200, "time": 1.0, "nonce": 789},
-    {"strategy": "MultiProcessStrategy",  "hashrate": 2500, "attempts": 250, "time": 1.2, "nonce": 101},
+    {
+        "strategy": "SequentialStrategy",
+        "hashrate": 1000,
+        "attempts": 500,
+        "time": 2.0,
+        "nonce": 123,
+    },
+    {"strategy": "RandomStrategy", "hashrate": 800, "attempts": 700, "time": 3.5, "nonce": 456},
+    {
+        "strategy": "MultiThreadStrategy",
+        "hashrate": 3000,
+        "attempts": 200,
+        "time": 1.0,
+        "nonce": 789,
+    },
+    {
+        "strategy": "MultiProcessStrategy",
+        "hashrate": 2500,
+        "attempts": 250,
+        "time": 1.2,
+        "nonce": 101,
+    },
 ]
 
 
@@ -57,8 +75,14 @@ def test_analyze_reasons_is_list():
 
 def test_analyze_equal_hashrates_gives_100_confidence():
     equal_results = [
-        {"strategy": "SequentialStrategy",  "hashrate": 500, "attempts": 100, "time": 1.0, "nonce": 1},
-        {"strategy": "RandomStrategy",       "hashrate": 500, "attempts": 100, "time": 1.0, "nonce": 2},
+        {
+            "strategy": "SequentialStrategy",
+            "hashrate": 500,
+            "attempts": 100,
+            "time": 1.0,
+            "nonce": 1,
+        },
+        {"strategy": "RandomStrategy", "hashrate": 500, "attempts": 100, "time": 1.0, "nonce": 2},
     ]
     result = AIService.analyze(equal_results, difficulty=4, threads=4, processes=4)
     assert result["confidence"] == 100

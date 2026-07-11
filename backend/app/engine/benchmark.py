@@ -34,28 +34,21 @@ class BenchmarkEngine:
             #
             if self.reporter:
 
-                self.reporter.emit({
-
-                    "event": "strategy_started",
-
-                    "strategy": strategy.__class__.__name__,
-
-                    "current": index + 1,
-
-                    "total": total,
-
-                    "progress": int(index / total * 100),
-
-                })
+                self.reporter.emit(
+                    {
+                        "event": "strategy_started",
+                        "strategy": strategy.__class__.__name__,
+                        "current": index + 1,
+                        "total": total,
+                        "progress": int(index / total * 100),
+                    }
+                )
 
             solver = Solver(strategy)
 
             result = solver.solve(
-
                 self.puzzle,
-
                 progress_callback=self.reporter.emit if self.reporter else None,
-
             )
 
             result["strategy"] = strategy.__class__.__name__
@@ -67,20 +60,15 @@ class BenchmarkEngine:
             #
             if self.reporter:
 
-                self.reporter.emit({
-
-                    "event": "strategy_completed",
-
-                    "strategy": strategy.__class__.__name__,
-
-                    "current": index + 1,
-
-                    "total": total,
-
-                    "progress": int((index + 1) / total * 100),
-
-                    "result": result,
-
-                })
+                self.reporter.emit(
+                    {
+                        "event": "strategy_completed",
+                        "strategy": strategy.__class__.__name__,
+                        "current": index + 1,
+                        "total": total,
+                        "progress": int((index + 1) / total * 100),
+                        "result": result,
+                    }
+                )
 
         return results

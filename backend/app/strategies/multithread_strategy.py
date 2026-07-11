@@ -6,8 +6,9 @@ Multi-threaded Search Strategy
 
 import threading
 import time
-from app.utils.hashing import sha256
+
 from app.strategies.base_strategy import Strategy
+from app.utils.hashing import sha256
 
 
 class MultiThreadStrategy(Strategy):
@@ -44,18 +45,20 @@ class MultiThreadStrategy(Strategy):
                     with lock:
                         result["attempts"] += 1000
                         current_total = result["attempts"]
-                    
+
                     if progress_callback and current_total % 10000 == 0:
                         elapsed = time.perf_counter() - start_time
                         hashrate = current_total / elapsed if elapsed > 0 else 0
-                        progress_callback({
-                            "event": "progress",
-                            "strategy": "MultiThreadStrategy",
-                            "attempts": current_total,
-                            "nonce": nonce,
-                            "hashrate": round(hashrate, 2),
-                            "elapsed": round(elapsed, 3),
-                        })
+                        progress_callback(
+                            {
+                                "event": "progress",
+                                "strategy": "MultiThreadStrategy",
+                                "attempts": current_total,
+                                "nonce": nonce,
+                                "hashrate": round(hashrate, 2),
+                                "elapsed": round(elapsed, 3),
+                            }
+                        )
 
                 if hash_value.startswith("0" * puzzle.difficulty()):
 
@@ -64,7 +67,7 @@ class MultiThreadStrategy(Strategy):
                         if not found.is_set():
 
                             # Add remaining local attempts
-                            result["attempts"] += (local_attempts % 1000)
+                            result["attempts"] += local_attempts % 1000
                             result["nonce"] = nonce
                             result["hash"] = hash_value
 

@@ -54,9 +54,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 pass
     finally:
         manager.disconnect(websocket)
-        logger.info(
-            "WebSocket client disconnected | remaining=%d", len(manager.connections)
-        )
+        logger.info("WebSocket client disconnected | remaining=%d", len(manager.connections))
 
 
 async def _receive_loop(websocket: WebSocket) -> None:

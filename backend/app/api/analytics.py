@@ -6,13 +6,7 @@ from fastapi import APIRouter
 
 from app.services.analytics_service import AnalyticsService
 
-router = APIRouter(
-
-    prefix="/analytics",
-
-    tags=["Analytics"]
-
-)
+router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 service = AnalyticsService()
 

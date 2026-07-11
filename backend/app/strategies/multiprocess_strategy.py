@@ -8,8 +8,8 @@ import multiprocessing as mp
 import threading
 import time
 
-from app.utils.hashing import sha256
 from app.strategies.base_strategy import Strategy
+from app.utils.hashing import sha256
 
 
 def worker(start, step, data, difficulty, found, result, total_attempts, lock, queue, start_time):
@@ -28,18 +28,20 @@ def worker(start, step, data, difficulty, found, result, total_attempts, lock, q
             with lock:
                 total_attempts.value += 1000
                 current_total = total_attempts.value
-            
+
             if queue is not None and current_total % 10000 == 0:
                 elapsed = time.perf_counter() - start_time
                 hashrate = current_total / elapsed if elapsed > 0 else 0
-                queue.put({
-                    "event": "progress",
-                    "strategy": "MultiProcessStrategy",
-                    "attempts": current_total,
-                    "nonce": nonce,
-                    "hashrate": round(hashrate, 2),
-                    "elapsed": round(elapsed, 3),
-                })
+                queue.put(
+                    {
+                        "event": "progress",
+                        "strategy": "MultiProcessStrategy",
+                        "attempts": current_total,
+                        "nonce": nonce,
+                        "hashrate": round(hashrate, 2),
+                        "elapsed": round(elapsed, 3),
+                    }
+                )
 
         if hash_value.startswith("0" * difficulty):
 
@@ -68,15 +70,15 @@ class MultiProcessStrategy(Strategy):
 
         found = manager.Event()
         result = manager.dict()
-        total_attempts = manager.Value('i', 0)
+        total_attempts = manager.Value("i", 0)
         lock = manager.Lock()
-        
+
         queue = manager.Queue() if progress_callback else None
         start_time = time.perf_counter()
-        
+
         # We need a way to stop the monitor thread
         stop_monitor = threading.Event()
-        
+
         def monitor():
             while not stop_monitor.is_set():
                 try:
@@ -86,7 +88,7 @@ class MultiProcessStrategy(Strategy):
                         progress_callback(msg)
                 except Exception:
                     continue
-        
+
         monitor_thread = None
         if queue is not None:
             monitor_thread = threading.Thread(target=monitor, daemon=True)
@@ -108,7 +110,7 @@ class MultiProcessStrategy(Strategy):
                     total_attempts,
                     lock,
                     queue,
-                    start_time
+                    start_time,
                 ),
             )
 
@@ -117,7 +119,7 @@ class MultiProcessStrategy(Strategy):
 
         for p in jobs:
             p.join()
-            
+
         if monitor_thread:
             stop_monitor.set()
             monitor_thread.join(timeout=1.0)

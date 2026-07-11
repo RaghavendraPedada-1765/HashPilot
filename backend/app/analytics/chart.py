@@ -6,6 +6,7 @@ Benchmark Chart Generator
 
 import json
 from pathlib import Path
+
 import matplotlib.pyplot as plt
 
 

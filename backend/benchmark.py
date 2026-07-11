@@ -4,18 +4,15 @@ HashPilot
 Benchmark Runner
 """
 
-from app.core.config import Config
-
-from app.engine.pow_puzzle import ProofOfWorkPuzzle
-from app.engine.benchmark import BenchmarkEngine
-
-from app.strategies.sequential import SequentialStrategy
-from app.strategies.random_strategy import RandomStrategy
-from app.strategies.multithread_strategy import MultiThreadStrategy
-from app.strategies.multiprocess_strategy import MultiProcessStrategy
-
-from app.analytics.exporter import BenchmarkExporter
 from app.analytics.chart import BenchmarkChart
+from app.analytics.exporter import BenchmarkExporter
+from app.core.config import Config
+from app.engine.benchmark import BenchmarkEngine
+from app.engine.pow_puzzle import ProofOfWorkPuzzle
+from app.strategies.multiprocess_strategy import MultiProcessStrategy
+from app.strategies.multithread_strategy import MultiThreadStrategy
+from app.strategies.random_strategy import RandomStrategy
+from app.strategies.sequential import SequentialStrategy
 
 
 def main():
@@ -36,17 +33,9 @@ def main():
     benchmark.add_strategy(SequentialStrategy())
     benchmark.add_strategy(RandomStrategy())
 
-    benchmark.add_strategy(
-        MultiThreadStrategy(
-            threads=config.benchmark["threads"]
-        )
-    )
+    benchmark.add_strategy(MultiThreadStrategy(threads=config.benchmark["threads"]))
 
-    benchmark.add_strategy(
-        MultiProcessStrategy(
-            processes=config.benchmark["processes"]
-        )
-    )
+    benchmark.add_strategy(MultiProcessStrategy(processes=config.benchmark["processes"]))
 
     # Run benchmark
     results = benchmark.run()
@@ -73,12 +62,7 @@ def main():
     print(f"               {config.project['name']} Benchmark")
     print("=" * 75)
 
-    print(
-        f"{'Strategy':<22}"
-        f"{'Time(s)':>10}"
-        f"{'Attempts':>15}"
-        f"{'Hash Rate(H/s)':>20}"
-    )
+    print(f"{'Strategy':<22}" f"{'Time(s)':>10}" f"{'Attempts':>15}" f"{'Hash Rate(H/s)':>20}")
 
     print("-" * 75)
 

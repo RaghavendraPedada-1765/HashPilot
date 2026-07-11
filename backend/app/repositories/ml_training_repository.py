@@ -24,21 +24,13 @@ class MLTrainingRepository:
     ):
 
         sample = MLTrainingData(
-
             cpu_cores=cpu_cores,
-
             logical_threads=logical_threads,
-
             ram_gb=ram_gb,
-
             difficulty=difficulty,
-
             threads=threads,
-
             processes=processes,
-
             winner_strategy=winner_strategy,
-
         )
 
         db.add(sample)

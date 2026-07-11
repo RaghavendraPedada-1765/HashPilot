@@ -18,84 +18,44 @@ class AnalyticsService:
 
             total_runs = db.query(Benchmark).count()
 
-            total_winners = db.query(Benchmark).filter(
-                Benchmark.winner == True
-            ).count()
+            total_winners = db.query(Benchmark).filter(Benchmark.winner == True).count()
 
-            avg_hashrate = db.query(
-                func.avg(Benchmark.hashrate)
-            ).scalar()
+            avg_hashrate = db.query(func.avg(Benchmark.hashrate)).scalar()
 
             strategies = []
 
-            strategy_names = [
-
-                row[0]
-
-                for row in db.query(
-                    Benchmark.strategy
-                ).distinct()
-
-            ]
+            strategy_names = [row[0] for row in db.query(Benchmark.strategy).distinct()]
 
             for strategy in strategy_names:
 
-                wins = db.query(Benchmark).filter(
+                wins = (
+                    db.query(Benchmark)
+                    .filter(Benchmark.strategy == strategy, Benchmark.winner == True)
+                    .count()
+                )
 
-                    Benchmark.strategy == strategy,
-
-                    Benchmark.winner == True
-
-                ).count()
-
-                avg = db.query(
-
-                    func.avg(Benchmark.hashrate)
-
-                ).filter(
-
-                    Benchmark.strategy == strategy
-
-                ).scalar()
+                avg = (
+                    db.query(func.avg(Benchmark.hashrate))
+                    .filter(Benchmark.strategy == strategy)
+                    .scalar()
+                )
 
                 strategies.append(
-
-                    {
-
-                        "strategy": strategy,
-
-                        "wins": wins,
-
-                        "average_hashrate": round(avg or 0, 2)
-
-                    }
-
+                    {"strategy": strategy, "wins": wins, "average_hashrate": round(avg or 0, 2)}
                 )
 
             best = None
 
             if strategies:
 
-                best = max(
-
-                    strategies,
-
-                    key=lambda x: x["average_hashrate"]
-
-                )["strategy"]
+                best = max(strategies, key=lambda x: x["average_hashrate"])["strategy"]
 
             return {
-
                 "total_runs": total_runs,
-
                 "total_winners": total_winners,
-
                 "average_hashrate": round(avg_hashrate or 0, 2),
-
                 "best_strategy": best,
-
                 "strategies": strategies,
-
             }
 
         finally:

@@ -28,23 +28,17 @@ class DatasetBuilder:
 
             for row in rows:
 
-                data.append({
-
-                    "cpu_cores": row.cpu_cores,
-
-                    "logical_threads": row.logical_threads,
-
-                    "ram_gb": row.ram_gb,
-
-                    "difficulty": row.difficulty,
-                    
-                    "threads": row.threads,
-                    
-                    "processes": row.processes,
-
-                    "strategy": row.winner_strategy,
-
-                })
+                data.append(
+                    {
+                        "cpu_cores": row.cpu_cores,
+                        "logical_threads": row.logical_threads,
+                        "ram_gb": row.ram_gb,
+                        "difficulty": row.difficulty,
+                        "threads": row.threads,
+                        "processes": row.processes,
+                        "strategy": row.winner_strategy,
+                    }
+                )
 
             return pd.DataFrame(data)
 

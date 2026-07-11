@@ -12,6 +12,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.models.benchmark_model  # noqa: F401 – registers ORM model
+import app.models.ml_training_model  # noqa: F401 – registers ORM model
 from app.api.analytics import router as analytics_router
 from app.api.benchmark import router as benchmark_router
 from app.api.history import router as history_router
@@ -21,9 +23,6 @@ from app.api.system import router as system_router
 from app.api.websocket import router as websocket_router
 from app.core.logger import logger
 from app.database.db import Base, engine
-
-import app.models.benchmark_model  # noqa: F401 – registers ORM model
-import app.models.ml_training_model  # noqa: F401 – registers ORM model
 
 # ---------------------------------------------------------------------------
 # Database bootstrap

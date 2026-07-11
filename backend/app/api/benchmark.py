@@ -7,8 +7,8 @@ Runs all four hash strategies sequentially and returns results + AI analysis.
 from fastapi import APIRouter
 
 from app.core.logger import logger
-from app.services.benchmark_service import BenchmarkService
 from app.services.ai_service import AIService
+from app.services.benchmark_service import BenchmarkService
 
 router = APIRouter(
     prefix="/benchmark",
@@ -31,7 +31,9 @@ def run_benchmark(
     """
     logger.info(
         "Benchmark requested | difficulty=%d threads=%d processes=%d",
-        difficulty, threads, processes,
+        difficulty,
+        threads,
+        processes,
     )
 
     results = service.run(

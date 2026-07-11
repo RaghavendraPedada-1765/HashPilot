@@ -7,8 +7,8 @@ Random Search Strategy
 import random
 import time
 
-from app.utils.hashing import sha256
 from app.strategies.base_strategy import Strategy
+from app.utils.hashing import sha256
 
 
 class RandomStrategy(Strategy):
@@ -41,14 +41,16 @@ class RandomStrategy(Strategy):
             if progress_callback and attempts % 10000 == 0:
                 elapsed = time.perf_counter() - start
                 hashrate = attempts / elapsed if elapsed > 0 else 0
-                progress_callback({
-                    "event": "progress",
-                    "strategy": "RandomStrategy",
-                    "attempts": attempts,
-                    "nonce": nonce,
-                    "hashrate": round(hashrate, 2),
-                    "elapsed": round(elapsed, 3),
-                })
+                progress_callback(
+                    {
+                        "event": "progress",
+                        "strategy": "RandomStrategy",
+                        "attempts": attempts,
+                        "nonce": nonce,
+                        "hashrate": round(hashrate, 2),
+                        "elapsed": round(elapsed, 3),
+                    }
+                )
 
             if hash_value.startswith("0" * puzzle.difficulty()):
                 return nonce, hash_value, attempts

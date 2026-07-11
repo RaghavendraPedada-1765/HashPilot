@@ -71,12 +71,8 @@ class AIService:
             import pandas as pd
             import psutil
 
-            model_path = os.path.join(
-                os.path.dirname(__file__), "..", "ml", "strategy_model.pkl"
-            )
-            encoder_path = os.path.join(
-                os.path.dirname(__file__), "..", "ml", "label_encoder.pkl"
-            )
+            model_path = os.path.join(os.path.dirname(__file__), "..", "ml", "strategy_model.pkl")
+            encoder_path = os.path.join(os.path.dirname(__file__), "..", "ml", "label_encoder.pkl")
 
             if os.path.exists(model_path) and os.path.exists(encoder_path):
                 model = joblib.load(model_path)
@@ -87,9 +83,7 @@ class AIService:
                         {
                             "cpu_cores": psutil.cpu_count(logical=False),
                             "logical_threads": psutil.cpu_count(logical=True),
-                            "ram_gb": round(
-                                psutil.virtual_memory().total / (1024**3), 2
-                            ),
+                            "ram_gb": round(psutil.virtual_memory().total / (1024**3), 2),
                             "difficulty": difficulty,
                             "threads": threads,
                             "processes": processes,
@@ -101,9 +95,7 @@ class AIService:
                 ml_recommended = encoder.inverse_transform(pred_encoded)[0]
                 logger.info("ML recommendation: %s", ml_recommended)
             else:
-                logger.warning(
-                    "ML model not found — using rule-based recommendation."
-                )
+                logger.warning("ML model not found — using rule-based recommendation.")
         except Exception as exc:
             logger.warning("ML prediction failed (%s) — using rule-based fallback.", exc)
 

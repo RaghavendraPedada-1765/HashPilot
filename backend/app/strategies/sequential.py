@@ -9,8 +9,8 @@ License: MIT
 
 import time
 
-from app.utils.hashing import sha256
 from app.strategies.base_strategy import Strategy
+from app.utils.hashing import sha256
 
 
 class SequentialStrategy(Strategy):
@@ -40,38 +40,25 @@ class SequentialStrategy(Strategy):
 
                 elapsed = time.perf_counter() - start
 
-                hashrate = (
-                    attempts / elapsed
-                    if elapsed > 0
-                    else 0
+                hashrate = attempts / elapsed if elapsed > 0 else 0
+
+                progress_callback(
+                    {
+                        "event": "progress",
+                        "strategy": "SequentialStrategy",
+                        "attempts": attempts,
+                        "nonce": nonce,
+                        "hashrate": round(hashrate, 2),
+                        "elapsed": round(elapsed, 3),
+                    }
                 )
-
-                progress_callback({
-
-                    "event": "progress",
-
-                    "strategy": "SequentialStrategy",
-
-                    "attempts": attempts,
-
-                    "nonce": nonce,
-
-                    "hashrate": round(hashrate, 2),
-
-                    "elapsed": round(elapsed, 3),
-
-                })
 
             if hash_value.startswith("0" * puzzle.difficulty()):
 
                 return (
-
                     nonce,
-
                     hash_value,
-
                     attempts,
-
                 )
 
             nonce += 1

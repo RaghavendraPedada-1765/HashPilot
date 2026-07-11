@@ -4,11 +4,7 @@ HashPilot
 Machine Learning Training Dataset Model
 """
 
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import Float
-from sqlalchemy import Integer
-from sqlalchemy import String
+from sqlalchemy import Column, DateTime, Float, Integer, String
 from sqlalchemy.sql import func
 
 from app.database.db import Base

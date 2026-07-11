@@ -5,10 +5,10 @@ HashPilot Report API
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
+from app.services.ai_service import AIService
+from app.services.benchmark_service import BenchmarkService
 from app.services.report_service import ReportService
 from app.services.system_service import SystemService
-from app.services.benchmark_service import BenchmarkService
-from app.services.ai_service import AIService
 
 router = APIRouter(
     prefix="/report",
@@ -50,7 +50,5 @@ def generate_report(
     return StreamingResponse(
         pdf,
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": "attachment; filename=HashPilot_Report.pdf"
-        },
+        headers={"Content-Disposition": "attachment; filename=HashPilot_Report.pdf"},
     )

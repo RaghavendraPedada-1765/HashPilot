@@ -7,9 +7,7 @@ puzzle = ProofOfWorkPuzzle(
     difficulty=4,
 )
 
-solver = Solver(
-    MultiThreadStrategy(threads=4)
-)
+solver = Solver(MultiThreadStrategy(threads=4))
 
 result = solver.solve(puzzle)
 

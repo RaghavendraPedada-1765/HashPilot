@@ -14,6 +14,7 @@ client = TestClient(app)
 
 # ─── Health ────────────────────────────────────────────────────────────────────
 
+
 def test_root_returns_project_name():
     response = client.get("/")
     assert response.status_code == 200
@@ -27,6 +28,7 @@ def test_root_returns_running_status():
 
 # ─── History ───────────────────────────────────────────────────────────────────
 
+
 def test_history_returns_list():
     response = client.get("/history/")
     assert response.status_code == 200
@@ -35,12 +37,14 @@ def test_history_returns_list():
 
 # ─── Analytics ─────────────────────────────────────────────────────────────────
 
+
 def test_analytics_returns_200():
     response = client.get("/analytics/")
     assert response.status_code == 200
 
 
 # ─── System ────────────────────────────────────────────────────────────────────
+
 
 def test_system_has_cpu_field():
     response = client.get("/system/")
@@ -51,6 +55,7 @@ def test_system_has_cpu_field():
 
 
 # ─── Predict ───────────────────────────────────────────────────────────────────
+
 
 def test_predict_returns_strategy():
     """Predict endpoint must always return a recommended_strategy field."""
@@ -76,6 +81,7 @@ def test_predict_confidence_in_range():
 
 
 # ─── Benchmark (slow — skipped in fast mode) ──────────────────────────────────
+
 
 @pytest.mark.slow
 def test_benchmark_returns_results():

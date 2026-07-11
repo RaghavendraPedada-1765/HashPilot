@@ -5,8 +5,6 @@ Verifies that AIService.analyze() returns correct structure and values
 without requiring a real ML model to be present.
 """
 
-import pytest
-
 from app.services.ai_service import AIService
 
 MOCK_RESULTS = [

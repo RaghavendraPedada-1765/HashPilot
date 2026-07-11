@@ -15,5 +15,5 @@ class ProgressReporter:
         for callback in self._callbacks:
             try:
                 callback(event_data)
-            except Exception as e:
+            except Exception:
                 pass

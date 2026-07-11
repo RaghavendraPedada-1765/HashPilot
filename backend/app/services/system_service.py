@@ -2,7 +2,6 @@
 HashPilot System Information Service
 """
 
-import os
 import platform
 
 import psutil

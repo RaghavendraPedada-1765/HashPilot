@@ -18,7 +18,7 @@ class AnalyticsService:
 
             total_runs = db.query(Benchmark).count()
 
-            total_winners = db.query(Benchmark).filter(Benchmark.winner == True).count()
+            total_winners = db.query(Benchmark).filter(Benchmark.winner == True).count()  # noqa: E712
 
             avg_hashrate = db.query(func.avg(Benchmark.hashrate)).scalar()
 
@@ -30,7 +30,7 @@ class AnalyticsService:
 
                 wins = (
                     db.query(Benchmark)
-                    .filter(Benchmark.strategy == strategy, Benchmark.winner == True)
+                    .filter(Benchmark.strategy == strategy, Benchmark.winner == True)  # noqa: E712
                     .count()
                 )
 

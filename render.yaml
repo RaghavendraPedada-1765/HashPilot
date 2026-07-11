@@ -6,11 +6,11 @@ services:
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     disk:
       name: sqlite-data
-      mountPath: /var/data
+      mountPath: /opt/render/project/src/backend/data
       sizeGB: 1
     envVars:
       - key: DATABASE_URL
-        value: sqlite:////var/data/hashpilot.db
+        value: sqlite:///data/hashpilot.db
       - key: PYTHON_VERSION
         value: 3.13.1
       - key: ALLOWED_ORIGINS

@@ -36,4 +36,4 @@ USER hashpilot
 # Production command:
 #   --workers 1 keeps multiprocessing benchmark workers from competing with
 #   uvicorn workers. Increase if you move long-running tasks to a queue.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

@@ -1,27 +1,31 @@
+databases:
+  # ── Free PostgreSQL instance ───────────────────────────────────────────────
+  - name: hashpilot-db
+    plan: free
+    databaseName: hashpilot
+    user: hashpilot
+
 services:
   # ── Backend: FastAPI / Uvicorn ─────────────────────────────────────────────
   - type: web
     name: hashpilot-backend
     env: python
     region: oregon   # Change to: oregon | frankfurt | singapore | ohio
-    plan: free       # Change to "starter" for always-on (no spin-down)
+    plan: free
     buildCommand: "cd backend && pip install -r requirements.txt"
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-    disk:
-      name: sqlite-data
-      mountPath: /opt/render/project/src/backend/data
-      sizeGB: 1
     envVars:
       - key: DATABASE_URL
-        # SQLite stored on the persistent disk mount above
-        value: sqlite:////opt/render/project/src/backend/data/hashpilot.db
+        fromDatabase:
+          name: hashpilot-db        # Links to the database declared above
+          property: connectionString # Render injects the full postgres:// URL
       - key: PYTHON_VERSION
         value: "3.13.1"
       - key: LOG_LEVEL
         value: INFO
       - key: ALLOWED_ORIGINS
         sync: false
-        # ⬆ Set this in the Render dashboard AFTER the frontend Static Site URL is known.
+        # ⬆ Set this in the Render dashboard AFTER your frontend URL is known.
         # Example value:  https://hashpilot-frontend.onrender.com
 
   # ── Frontend: Vite/React Static Site ──────────────────────────────────────

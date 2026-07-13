@@ -14,6 +14,11 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./hashpilot.db")
 
+# Render (and Heroku) provide `postgres://` but SQLAlchemy 2.x requires
+# `postgresql://`.  Fix the scheme transparently so no manual editing is needed.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # SQLite needs check_same_thread=False so that FastAPI's threadpool can reuse
 # the same connection across threads.  Other databases don't need this flag.
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}

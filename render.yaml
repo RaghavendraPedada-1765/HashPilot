@@ -1,10 +1,3 @@
-databases:
-  # ── Free PostgreSQL instance ───────────────────────────────────────────────
-  - name: hashpilot-db
-    plan: free
-    databaseName: hashpilot
-    user: hashpilot
-
 services:
   # ── Backend: FastAPI / Uvicorn ─────────────────────────────────────────────
   - type: web
@@ -14,17 +7,17 @@ services:
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: hashpilot-db        # Links to the database declared above
-          property: connectionString # Render injects the full postgres:// URL
+        sync: false
+        # ⬆ Paste your Neon connection string in the Render dashboard.
+        # Never commit real credentials to this file!
       - key: PYTHON_VERSION
         value: "3.13.1"
       - key: LOG_LEVEL
         value: INFO
       - key: ALLOWED_ORIGINS
         sync: false
-        # ⬆ Set this in the Render dashboard AFTER your frontend URL is known.
-        # Example value:  https://hashpilot-frontend.onrender.com
+        # ⬆ Set to your Vercel frontend URL after it's deployed.
+        # Example:  https://hashpilot.vercel.app
 
   # ── Frontend: Vite/React Static Site ──────────────────────────────────────
   - type: web
@@ -40,7 +33,7 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         sync: false
-        # ⬆ Set to your backend URL, e.g.: https://hashpilot-backend.onrender.com
+        # ⬆ Set to your Render backend URL, e.g.: https://hashpilot-backend.onrender.com
       - key: VITE_BENCHMARK_WS_URL
         sync: false
         # ⬆ Set to: wss://hashpilot-backend.onrender.com/ws/benchmark

@@ -1,7 +1,10 @@
 services:
+  # ── Backend: FastAPI / Uvicorn ─────────────────────────────────────────────
   - type: web
     name: hashpilot-backend
     env: python
+    region: oregon   # Change to: oregon | frankfurt | singapore | ohio
+    plan: free       # Change to "starter" for always-on (no spin-down)
     buildCommand: "cd backend && pip install -r requirements.txt"
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     disk:
@@ -10,9 +13,34 @@ services:
       sizeGB: 1
     envVars:
       - key: DATABASE_URL
-        value: sqlite:///data/hashpilot.db
+        # SQLite stored on the persistent disk mount above
+        value: sqlite:////opt/render/project/src/backend/data/hashpilot.db
       - key: PYTHON_VERSION
-        value: 3.13.1
+        value: "3.13.1"
+      - key: LOG_LEVEL
+        value: INFO
       - key: ALLOWED_ORIGINS
         sync: false
-        # Update this value in the Render dashboard once your frontend is deployed
+        # ⬆ Set this in the Render dashboard AFTER the frontend Static Site URL is known.
+        # Example value:  https://hashpilot-frontend.onrender.com
+
+  # ── Frontend: Vite/React Static Site ──────────────────────────────────────
+  - type: web
+    name: hashpilot-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: "cd frontend && npm ci && npm run build"
+    staticPublishPath: ./frontend/dist
+    routes:
+      # Redirect all 404s to index.html so React Router handles navigation
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
+        # ⬆ Set to your backend URL, e.g.: https://hashpilot-backend.onrender.com
+      - key: VITE_BENCHMARK_WS_URL
+        sync: false
+        # ⬆ Set to: wss://hashpilot-backend.onrender.com/ws/benchmark

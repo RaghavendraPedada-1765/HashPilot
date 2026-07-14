@@ -21,6 +21,10 @@ RUN groupadd --gid 1001 hashpilot && \
 
 WORKDIR /app
 
+# Transfer ownership of /app to the non-root user so it can write
+# the SQLite database file (hashpilot.db) at runtime.
+RUN chown hashpilot:hashpilot /app
+
 # Copy installed packages from builder stage.
 COPY --from=builder /install /usr/local
 

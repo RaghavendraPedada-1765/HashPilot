@@ -3,37 +3,34 @@ services:
   - type: web
     name: hashpilot-backend
     env: python
+    region: oregon
+    plan: free
     buildCommand: "cd backend && pip install -r requirements.txt"
-    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
     envVars:
-      - key: DATABASE_URL
-        sync: false
-        # ⬆ Paste your Neon connection string in the Render dashboard.
-        # Never commit real credentials to this file!
       - key: PYTHON_VERSION
         value: "3.13.1"
+
       - key: LOG_LEVEL
         value: INFO
+
+      # ── Database ──────────────────────────────────────────────────────────
+      # For production, set this to a PostgreSQL connection string, e.g. from
+      # Neon (https://neon.tech) — free tier available.
+      # Example: postgresql+psycopg2://user:pass@host/dbname
+      # For quick testing, leave blank to use the default SQLite fallback.
+      - key: DATABASE_URL
+        sync: false
+
+      # ── CORS ─────────────────────────────────────────────────────────────
+      # Comma-separated list of allowed frontend origins.
+      # Set this to your Vercel frontend URL, e.g.:
+      #   https://hashpilot.vercel.app
       - key: ALLOWED_ORIGINS
         sync: false
-        # ⬆ Set to your Vercel frontend URL after it's deployed.
-        # Example:  https://hashpilot.vercel.app
 
-  # ── Frontend: Vite/React Static Site ──────────────────────────────────────
-  - type: web
-    name: hashpilot-frontend
-    env: static
-    buildCommand: "cd frontend && npm ci && npm run build"
-    staticPublishPath: ./frontend/dist
-    routes:
-      # Redirect all 404s to index.html so React Router handles navigation
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_BASE_URL
-        sync: false
-        # ⬆ Set to your Render backend URL, e.g.: https://hashpilot-backend.onrender.com
-      - key: VITE_BENCHMARK_WS_URL
-        sync: false
-        # ⬆ Set to: wss://hashpilot-backend.onrender.com/ws/benchmark
+      # ── ML Model paths (relative to the backend/ directory) ───────────────
+      - key: MODEL_PATH
+        value: app/ml/strategy_model.pkl
+      - key: ENCODER_PATH
+        value: app/ml/label_encoder.pkl

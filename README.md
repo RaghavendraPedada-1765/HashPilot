@@ -110,9 +110,14 @@ graph TD
 1. Download `HashPilot-Setup-*.exe` from the link above
 2. Run the installer — choose per-user install (no admin required) or system-wide
 3. Launch **HashPilot** from your Desktop or Start Menu
-4. The app opens in your browser automatically — no configuration needed
 
-> Your benchmark history is stored locally in `%APPDATA%\HashPilot\hashpilot.db`. No data leaves your machine.
+> ⚠️ **Windows SmartScreen / Defender Note:**
+> Because HashPilot is an open-source tool without a paid corporate code-signing certificate, Windows SmartScreen may show a *"Windows protected your PC"* popup.
+> - **SmartScreen popup:** Click **"More info"** → Click **"Run anyway"**.
+> - **Windows Defender quarantine:** Open *Windows Security* → *Protection history* → Click *Actions* → **"Allow on device"**.
+> 
+> Your benchmark data is 100% open-source, local, and stored in `%APPDATA%\HashPilot\hashpilot.db`.
+
 
 ---
 

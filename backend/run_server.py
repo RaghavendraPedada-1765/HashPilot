@@ -49,8 +49,9 @@ def main() -> None:
     # Import the FastAPI app object directly — passing it as an object to
     # uvicorn.run() bypasses the string-based module import that fails in
     # PyInstaller bundles because uvicorn uses importlib.import_module().
-    from app.main import app  # noqa: PLC0415
     import uvicorn
+
+    from app.main import app  # noqa: PLC0415
 
     uvicorn.run(
         app,

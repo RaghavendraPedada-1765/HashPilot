@@ -79,8 +79,14 @@ class AIService:
             )
 
             # Prefer the user-retrained model in AppData; fall back to bundle
-            model_path = get_model_path() if os.path.exists(get_model_path()) else get_bundled_model_path()
-            encoder_path = get_encoder_path() if os.path.exists(get_encoder_path()) else get_bundled_encoder_path()
+            model_path = (
+                get_model_path() if os.path.exists(get_model_path()) else get_bundled_model_path()
+            )
+            encoder_path = (
+                get_encoder_path()
+                if os.path.exists(get_encoder_path())
+                else get_bundled_encoder_path()
+            )
 
             if os.path.exists(model_path) and os.path.exists(encoder_path):
                 model = joblib.load(model_path)

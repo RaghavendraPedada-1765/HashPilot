@@ -15,6 +15,7 @@ import "./index.css";
 const isDesktop =
   typeof window !== "undefined" && window.hashpilot?.isDesktop === true;
 
+// eslint-disable-next-line react-refresh/only-export-components
 const Router = isDesktop ? HashRouter : BrowserRouter;
 
 ReactDOM.createRoot(document.getElementById("root")).render(

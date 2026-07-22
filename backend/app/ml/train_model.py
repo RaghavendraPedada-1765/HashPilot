@@ -10,8 +10,6 @@ The trained artefacts are saved to app/ml/ so the StrategyPredictor can
 pick them up immediately.
 """
 
-import os
-
 import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier

@@ -9,4 +9,5 @@ pandas
 joblib
 numpy
 scikit-learn
-psycopg2-binary
+# psycopg2-binary  # Uncomment for PostgreSQL server deployments only
+# pyinstaller      # Dev-only: install manually before running build-desktop script

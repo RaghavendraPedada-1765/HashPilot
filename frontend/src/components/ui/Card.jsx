@@ -1,15 +1,16 @@
 import { motion } from "framer-motion";
 
 export function Card({ children, className = "", animate = false, ...props }) {
-  const baseClasses = "group/card bg-white/85 dark:bg-slate-950/55 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-[0_18px_55px_rgba(15,23,42,0.08)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)] transition-all duration-300 hover:border-slate-300 dark:hover:border-cyan-400/20";
-  
+  const base =
+    "rounded-[var(--radius-lg)] bg-[var(--bg-elevated)] border border-[var(--border)] shadow-[var(--shadow-card)] transition-colors duration-200 hover:border-[var(--border-strong)]";
+
   if (animate) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className={`${baseClasses} ${className}`}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className={`${base} ${className}`}
         {...props}
       >
         {children}
@@ -18,7 +19,7 @@ export function Card({ children, className = "", animate = false, ...props }) {
   }
 
   return (
-    <div className={`${baseClasses} ${className}`} {...props}>
+    <div className={`${base} ${className}`} {...props}>
       {children}
     </div>
   );

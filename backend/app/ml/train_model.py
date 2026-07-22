@@ -21,12 +21,15 @@ from sklearn.preprocessing import LabelEncoder
 
 from app.core.logger import logger
 from app.database.db import SessionLocal
+from app.ml.paths import get_encoder_path, get_model_path
 from app.models.ml_training_model import MLTrainingData
 
-# Resolve paths relative to this file so the script works regardless of CWD.
-_ML_DIR = os.path.dirname(__file__)
-MODEL_PATH = os.path.join(_ML_DIR, "strategy_model.pkl")
-ENCODER_PATH = os.path.join(_ML_DIR, "label_encoder.pkl")
+# Resolve writable model paths via the central path resolver.
+# In desktop (PyInstaller) mode these point to %APPDATA%\HashPilot\ml\.
+# In dev/server mode they point to the source app/ml/ directory.
+MODEL_PATH = get_model_path()
+ENCODER_PATH = get_encoder_path()
+
 
 # Minimum number of DB rows required before training is attempted.
 _MIN_SAMPLES = 10

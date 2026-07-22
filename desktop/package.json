@@ -1,0 +1,78 @@
+{
+  "name": "hashpilot-desktop",
+  "version": "1.0.0",
+  "description": "HashPilot — AI-Powered Computational Benchmarking Platform (Desktop)",
+  "main": "main.js",
+  "author": {
+    "name": "HashPilot Contributors",
+    "email": "hello@hashpilot.app"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "png-to-ico": "^3.0.2"
+  },
+  "build": {
+    "appId": "app.hashpilot.desktop",
+    "productName": "HashPilot",
+    "copyright": "Copyright © 2026 Raghavendra Pedada",
+    "directories": {
+      "output": "../dist-desktop",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend/dist/hashpilot_server",
+        "to": "hashpilot_server",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../frontend/dist",
+        "to": "frontend",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HashPilot",
+      "runAfterFinish": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "RaghavendraPedada-1765",
+      "repo": "HashPilot"
+    }
+  }
+}

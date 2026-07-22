@@ -25,7 +25,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import api from "../api/api";
 import { Card } from "./ui/Card";
-import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
 
 function confidenceValue(prediction) {
@@ -33,7 +32,7 @@ function confidenceValue(prediction) {
   return Math.max(0, Math.min(100, raw));
 }
 
-export default function AIPredictionCard({ prediction, actualWinner }) {
+export default function AIPredictionCard({ prediction, actualWinner, onRetrain }) {
   const [retraining, setRetraining] = useState(false);
   const [latestAccuracy, setLatestAccuracy] = useState(null);
 
@@ -67,6 +66,8 @@ export default function AIPredictionCard({ prediction, actualWinner }) {
         `Model retrained! New accuracy: ${data.accuracy}%`,
         { id: toastId, duration: 5000 }
       );
+      // Immediately refresh the prediction so the recommendation updates
+      if (onRetrain) await onRetrain();
     } catch (err) {
       const detail = err?.response?.data?.detail ?? "Retrain failed.";
       toast.error(detail, { id: toastId });
@@ -76,42 +77,50 @@ export default function AIPredictionCard({ prediction, actualWinner }) {
   }
 
   return (
-    <Card className="relative h-full min-h-[360px] overflow-hidden p-6" animate>
-      {/* Background gradients */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_35%),linear-gradient(135deg,rgba(99,102,241,0.12),transparent_45%)]" />
-      <div className="absolute -inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
-
+    <Card className="relative h-full min-h-[360px] overflow-hidden p-5">
       <div className="relative z-10 flex h-full flex-col">
         {/* Header */}
-        <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="mb-5 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-400/10 text-cyan-300 shadow-[0_0_32px_rgba(34,211,238,0.22)]">
-              <Brain size={25} />
-              <span className="absolute inset-0 rounded-2xl animate-glow-pulse" />
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)]"
+              style={{ background: "var(--accent-dim)", color: "var(--accent)" }}
+            >
+              <Brain size={18} />
             </div>
             <div>
-              <h2 className="m-0 text-lg font-black text-slate-950 dark:text-white">
+              <h2 className="m-0 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
                 AI Prediction
               </h2>
-              <p className="m-0 mt-1 text-xs text-slate-500">
+              <p className="m-0 text-[11px]" style={{ color: "var(--text-muted)" }}>
                 Adaptive strategy forecast
               </p>
             </div>
           </div>
-          <Badge variant="accent" dot className="bg-cyan-400/10">
+          <div
+            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider"
+            style={{ background: "var(--success-dim)", color: "var(--success)" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full animate-[dot-pulse_1.8s_ease-in-out_infinite]" style={{ background: "var(--success)" }} />
             Live
-          </Badge>
+          </div>
         </div>
 
         {prediction ? (
           <>
             {/* Recommended Strategy */}
-            <div className="mb-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-500">
-                <Target size={16} />
+            <div
+              className="mb-4 rounded-[var(--radius-md)] p-3"
+              style={{ background: "var(--accent-dim)", border: "1px solid rgba(59,130,246,0.2)" }}
+            >
+              <div
+                className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider"
+                style={{ color: "var(--accent)" }}
+              >
+                <Target size={12} />
                 Recommendation
               </div>
-              <div className="text-2xl font-black text-slate-950 dark:text-white">
+              <div className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
                 {predictedStrategy}
               </div>
             </div>
@@ -242,12 +251,15 @@ export default function AIPredictionCard({ prediction, actualWinner }) {
                       </div>
                     </div>
                     <div className="mt-2">
-                      <Badge
-                        variant={predictionCorrect ? "success" : "danger"}
-                        className="text-xs"
+                      <span
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                        style={{
+                          background: predictionCorrect ? "var(--success-dim)" : "rgba(239,68,68,0.15)",
+                          color: predictionCorrect ? "var(--success)" : "var(--danger)",
+                        }}
                       >
                         {predictionCorrect ? "✓ Correct" : "✗ Incorrect"}
-                      </Badge>
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -283,12 +295,15 @@ export default function AIPredictionCard({ prediction, actualWinner }) {
             </div>
           </>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-white/10">
-            <Sparkles size={28} className="mb-3 text-cyan-300" />
-            <div className="font-bold text-slate-950 dark:text-white">
+          <div
+            className="flex flex-1 flex-col items-center justify-center rounded-[var(--radius-md)] border border-dashed p-8 text-center"
+            style={{ borderColor: "var(--border-strong)" }}
+          >
+            <Sparkles size={24} className="mb-3" style={{ color: "var(--accent)" }} />
+            <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
               Awaiting prediction
             </div>
-            <div className="mt-1 text-sm text-slate-500">
+            <div className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
               Tune benchmark inputs to refresh the AI forecast.
             </div>
           </div>
@@ -300,15 +315,21 @@ export default function AIPredictionCard({ prediction, actualWinner }) {
 
 function Metric({ icon: Icon, label, value }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-white/[0.04]">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-400/10 text-indigo-300">
-        <Icon size={16} />
+    <div
+      className="flex items-center gap-2.5 rounded-[var(--radius-md)] p-2.5"
+      style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}
+    >
+      <div
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-sm)]"
+        style={{ background: "var(--accent-dim)", color: "var(--accent)" }}
+      >
+        <Icon size={13} />
       </div>
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+        <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
           {label}
         </div>
-        <div className="text-sm font-bold text-slate-950 dark:text-white">
+        <div className="text-sm font-semibold mono" style={{ color: "var(--text-primary)" }}>
           {value}
         </div>
       </div>

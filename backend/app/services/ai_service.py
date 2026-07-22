@@ -71,8 +71,16 @@ class AIService:
             import pandas as pd
             import psutil
 
-            model_path = os.path.join(os.path.dirname(__file__), "..", "ml", "strategy_model.pkl")
-            encoder_path = os.path.join(os.path.dirname(__file__), "..", "ml", "label_encoder.pkl")
+            from app.ml.paths import (
+                get_bundled_encoder_path,
+                get_bundled_model_path,
+                get_encoder_path,
+                get_model_path,
+            )
+
+            # Prefer the user-retrained model in AppData; fall back to bundle
+            model_path = get_model_path() if os.path.exists(get_model_path()) else get_bundled_model_path()
+            encoder_path = get_encoder_path() if os.path.exists(get_encoder_path()) else get_bundled_encoder_path()
 
             if os.path.exists(model_path) and os.path.exists(encoder_path):
                 model = joblib.load(model_path)

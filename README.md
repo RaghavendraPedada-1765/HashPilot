@@ -6,15 +6,18 @@
 
 ### AI-Powered Computational Benchmarking Platform
 
-[![CI](https://github.com/yourusername/HashPilot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/HashPilot/actions)
+[![CI](https://github.com/RaghavendraPedada-1765/HashPilot/actions/workflows/ci.yml/badge.svg)](https://github.com/RaghavendraPedada-1765/HashPilot/actions)
 [![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green?logo=fastapi)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/RaghavendraPedada-1765/HashPilot?label=Download&logo=github)](https://github.com/RaghavendraPedada-1765/HashPilot/releases/latest)
 
 HashPilot compares four hash-solving strategies in real time, predicts the optimal one with a Random Forest ML model, and delivers Grafana-style live telemetry with executive-grade PDF reports — all in a premium dark-mode SaaS UI.
 
-[Live Demo](https://hashpilot.vercel.app) · [API Docs](http://localhost:8000/docs) · [Report Bug](https://github.com/yourusername/HashPilot/issues) · [Request Feature](https://github.com/yourusername/HashPilot/issues)
+**Free · Open Source · Runs entirely offline**
+
+[⬇️ Download for Windows](https://github.com/RaghavendraPedada-1765/HashPilot/releases/latest) · [Live Demo](https://hashpilot.vercel.app) · [API Docs](http://localhost:8000/docs) · [Report Bug](https://github.com/RaghavendraPedada-1765/HashPilot/issues) · [Request Feature](https://github.com/RaghavendraPedada-1765/HashPilot/issues)
 
 </div>
 
@@ -93,7 +96,27 @@ graph TD
 
 ---
 
-## 🚀 Quick Start
+## ⬇️ Download
+
+> **Just want to run HashPilot?** Download the Windows installer — no Python or Node.js required.
+
+| Platform | Download | Notes |
+|----------|----------|-------|
+| 🪟 Windows 10/11 (x64) | [**HashPilot-Setup-latest.exe**](https://github.com/RaghavendraPedada-1765/HashPilot/releases/latest) | NSIS installer, ~50 MB |
+| 🐧 Linux | Coming soon | Follow [#roadmap](#️-roadmap) |
+| 🍎 macOS | Coming soon | Follow [#roadmap](#️-roadmap) |
+
+### Windows Installation
+1. Download `HashPilot-Setup-*.exe` from the link above
+2. Run the installer — choose per-user install (no admin required) or system-wide
+3. Launch **HashPilot** from your Desktop or Start Menu
+4. The app opens in your browser automatically — no configuration needed
+
+> Your benchmark history is stored locally in `%APPDATA%\HashPilot\hashpilot.db`. No data leaves your machine.
+
+---
+
+## 🚀 Quick Start (Developer)
 
 ### Prerequisites
 - Python 3.13+
@@ -102,7 +125,7 @@ graph TD
 ### 1. Clone
 
 ```bash
-git clone https://github.com/yourusername/HashPilot.git
+git clone https://github.com/RaghavendraPedada-1765/HashPilot.git
 cd HashPilot
 ```
 
@@ -253,7 +276,12 @@ pytest tests/ -v
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, code style, and how to submit pull requests.
+We welcome contributions of all kinds! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, code style, and how to submit pull requests.
+
+- 🐛 [Report a Bug](https://github.com/RaghavendraPedada-1765/HashPilot/issues/new?template=bug_report.md)
+- ✨ [Request a Feature](https://github.com/RaghavendraPedada-1765/HashPilot/issues/new?template=feature_request.md)
+- 💬 [Join Discussions](https://github.com/RaghavendraPedada-1765/HashPilot/discussions)
+- 🔒 [Report a Security Issue](SECURITY.md)
 
 ---
 
@@ -261,8 +289,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, code style, and how to su
 
 This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
 
+Copyright © 2026 [Raghavendra Pedada](https://github.com/RaghavendraPedada-1765)
+
 ---
 
+
 <div align="center">
-  Built with ⚡ by HashPilot · <a href="https://github.com/yourusername/HashPilot">GitHub</a>
+  Built with ⚡ by <a href="https://github.com/RaghavendraPedada-1765">Raghavendra Pedada</a> · <a href="https://github.com/RaghavendraPedada-1765/HashPilot">GitHub</a> · <a href="https://github.com/RaghavendraPedada-1765/HashPilot/releases">Releases</a>
 </div>

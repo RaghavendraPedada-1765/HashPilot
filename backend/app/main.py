@@ -7,10 +7,23 @@ via ALLOWED_ORIGINS for staging/production deployments.
 """
 
 import os
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# ---------------------------------------------------------------------------
+# PyInstaller desktop bundle detection
+# When frozen, __file__ lives inside a temp _MEIPASS dir; we must set the
+# working directory to the bundle's folder so that relative paths (ML models,
+# reports, etc.) resolve correctly at runtime.
+# ---------------------------------------------------------------------------
+if getattr(sys, "frozen", False):
+    # sys.executable is the path to the .exe; its parent is the install dir
+    _bundle_dir = Path(sys.executable).parent
+    os.chdir(_bundle_dir)
 
 from app.api.analytics import router as analytics_router
 from app.api.benchmark import router as benchmark_router
@@ -61,6 +74,19 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 _raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 _allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
+# Desktop mode: always allow Electron / local file origins
+_desktop_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+for _origin in _desktop_origins:
+    if _origin not in _allowed_origins:
+        _allowed_origins.append(_origin)
 
 app.add_middleware(
     CORSMiddleware,

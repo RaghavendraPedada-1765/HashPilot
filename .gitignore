@@ -51,3 +51,18 @@ node_modules/
 
 # SQLite databases
 *.db
+
+# ==========================
+# Desktop / Electron
+# ==========================
+# PyInstaller build artifacts
+backend/build/
+backend/dist/
+backend/*.spec.bak
+
+# Electron build output
+dist-desktop/
+desktop/node_modules/
+
+# electron-builder cache
+desktop/.webpack/

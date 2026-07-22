@@ -3,6 +3,10 @@ HashPilot Machine Learning Predictor
 
 Loads the trained Random Forest model and label encoder from disk and
 provides a single predict() method that the API layer calls.
+
+Model file load priority:
+  1. %APPDATA%\\HashPilot\\ml\\  — retrained models saved by the user
+  2. Bundled seed models shipped with the installer (read-only fallback)
 """
 
 import os
@@ -11,19 +15,32 @@ import joblib
 import numpy as np
 import pandas as pd
 
-# Resolve model paths relative to this file so the predictor works
-# regardless of the working directory the server is started from.
-_ML_DIR = os.path.dirname(__file__)
-_MODEL_PATH = os.path.join(_ML_DIR, "strategy_model.pkl")
-_ENCODER_PATH = os.path.join(_ML_DIR, "label_encoder.pkl")
+from app.ml.paths import (
+    get_bundled_encoder_path,
+    get_bundled_model_path,
+    get_encoder_path,
+    get_model_path,
+)
+
+
+def _load_artifact(primary: str, fallback: str):
+    """Load a joblib artifact from *primary*; fall back to *fallback*."""
+    if os.path.exists(primary):
+        return joblib.load(primary)
+    if os.path.exists(fallback):
+        return joblib.load(fallback)
+    raise FileNotFoundError(
+        f"ML model not found at '{primary}' or '{fallback}'. "
+        "Run a benchmark first, then click 'Retrain AI Model'."
+    )
 
 
 class StrategyPredictor:
     """Wraps the trained Random Forest for single-sample inference."""
 
     def __init__(self) -> None:
-        self.model = joblib.load(_MODEL_PATH)
-        self.encoder = joblib.load(_ENCODER_PATH)
+        self.model = _load_artifact(get_model_path(), get_bundled_model_path())
+        self.encoder = _load_artifact(get_encoder_path(), get_bundled_encoder_path())
 
         # Compute and cache the OOB score if available, otherwise use NaN.
         self._model_accuracy: float = getattr(self.model, "oob_score_", float("nan"))

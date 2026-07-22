@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import api from "../api/api";
 
 import Layout from "../components/Layout";
-import Hero from "../components/Hero";
 import AIRecommendation from "../components/AIRecommendation";
 import AIPredictionCard from "../components/AIPredictionCard";
 import SystemInfo from "../components/SystemInfo";
@@ -52,26 +51,25 @@ export default function Dashboard() {
   }, []);
 
   // ── AI Prediction (re-fetched whenever params change) ─────────────────────
+  const fetchPrediction = useCallback(async () => {
+    try {
+      const response = await api.post("/predict/", {
+        difficulty,
+        threads,
+        processes,
+      });
+      setPrediction(response.data);
+    } catch (error) {
+      console.error("Prediction Error:", error);
+    }
+  }, [difficulty, threads, processes]);
+
   useEffect(() => {
     let cancelled = false;
-
-    async function fetchPrediction() {
-      try {
-        const response = await api.post("/predict/", {
-          difficulty,
-          threads,
-          processes,
-        });
-        if (!cancelled) setPrediction(response.data);
-      } catch (error) {
-        console.error("Prediction Error:", error);
-      }
-    }
-
-    fetchPrediction();
-    return () => {
-      cancelled = true;
-    };
+    api.post("/predict/", { difficulty, threads, processes })
+      .then(r => { if (!cancelled) setPrediction(r.data); })
+      .catch(e => console.error("Prediction Error:", e));
+    return () => { cancelled = true; };
   }, [difficulty, threads, processes]);
 
   // ── Run benchmark ──────────────────────────────────────────────────────────
@@ -155,8 +153,6 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <Hero />
-
       <AIRecommendation analysis={analysis} />
 
       {/* Live Monitor + AI Prediction */}
@@ -166,7 +162,7 @@ export default function Dashboard() {
           Pass actualWinner so the card can compare Predicted vs Actual
           once a benchmark run has completed.
         */}
-        <AIPredictionCard prediction={prediction} actualWinner={actualWinner} />
+        <AIPredictionCard prediction={prediction} actualWinner={actualWinner} onRetrain={fetchPrediction} />
       </div>
 
       <ProgressPanel loading={loading} progress={progress} stage={stage} />
@@ -184,52 +180,54 @@ export default function Dashboard() {
 
       <SystemInfo info={systemInfo} />
 
-      <div className="flex justify-center mb-8">
-        <DownloadReportButton
-          difficulty={difficulty}
-          threads={threads}
-          processes={processes}
-        />
-      </div>
-
       {winner && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard
             title="Winner"
             value={winner.strategy}
-            icon={<Trophy size={20} />}
+            icon={<Trophy size={18} />}
             color="#10b981"
             delay={0}
           />
           <StatCard
             title="Hash Rate"
             value={winner.hashrate.toFixed(2)}
-            icon={<Zap size={20} />}
-            color="#06b6d4"
-            delay={0.08}
+            icon={<Zap size={18} />}
+            color="#3b82f6"
+            delay={0.06}
           />
           <StatCard
             title="Attempts"
             value={winner.attempts.toLocaleString()}
-            icon={<Hash size={20} />}
+            icon={<Hash size={18} />}
             color="#f59e0b"
-            delay={0.16}
+            delay={0.12}
           />
           <StatCard
             title="Runtime"
             value={`${winner.time.toFixed(3)} s`}
-            icon={<Clock size={20} />}
+            icon={<Clock size={18} />}
             color="#8b5cf6"
-            delay={0.24}
+            delay={0.18}
           />
         </div>
       )}
 
-      <div className="mb-8">
+      <div className="mb-6">
         <PerformanceChart results={results} />
       </div>
 
       <BenchmarkTable results={results} />
+
+      {results.length > 0 && (
+        <div className="mt-4 mb-6 flex justify-end">
+          <DownloadReportButton
+            difficulty={difficulty}
+            threads={threads}
+            processes={processes}
+          />
+        </div>
+      )}
     </Layout>
   );
 }

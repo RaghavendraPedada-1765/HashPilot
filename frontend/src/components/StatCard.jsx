@@ -41,50 +41,46 @@ function useCountUp(endValue, duration = 1000) {
 }
 
 export default function StatCard({ title, value, icon, color, delay = 0 }) {
-  const animatedValue = useCountUp(value, 1000);
-  
-  // Try formatting if it's a number, otherwise just string it
-  const formattedValue = typeof animatedValue === "number" && !title.includes("Runtime") 
-    ? animatedValue.toLocaleString() 
-    : animatedValue;
+  const animatedValue = useCountUp(value, 900);
+  const formattedValue =
+    typeof animatedValue === "number" && !title.includes("Runtime")
+      ? animatedValue.toLocaleString()
+      : animatedValue;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay, ease: "easeOut" }}
-      whileHover={{ y: -4 }}
+      transition={{ duration: 0.3, delay, ease: "easeOut" }}
       className="h-full"
     >
-      <Card className="h-full p-6 relative overflow-hidden group">
-        {/* Animated Gradient Border (simulated with before/after) */}
-        <div 
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at top right, ${color}30 0%, transparent 50%)`,
-          }}
-        />
-        
-        {/* Top edge colored border */}
-        <div 
-          className="absolute top-0 left-0 right-0 h-1"
+      <Card className="h-full p-4 relative overflow-hidden">
+        {/* Top accent bar */}
+        <div
+          className="absolute top-0 left-0 right-0 h-0.5 rounded-t-[var(--radius-lg)]"
           style={{ backgroundColor: color }}
         />
 
-        <div className="flex justify-between items-start mb-4">
-          <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{title}</div>
-          <div 
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
-            style={{ backgroundColor: `${color}15`, color: color, border: `1px solid ${color}30` }}
+        <div className="flex justify-between items-start mb-3 mt-1">
+          <div
+            className="text-[11px] font-semibold uppercase tracking-widest"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {title}
+          </div>
+          <div
+            className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0"
+            style={{ backgroundColor: `${color}18`, color }}
           >
             {icon}
           </div>
         </div>
 
-        <div className="flex items-baseline gap-2">
-          <div className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight break-all">
-            {formattedValue}
-          </div>
+        <div
+          className="text-2xl font-bold tracking-tight mono break-all"
+          style={{ color: "var(--text-primary)" }}
+        >
+          {formattedValue}
         </div>
       </Card>
     </motion.div>

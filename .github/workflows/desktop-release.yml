@@ -1,0 +1,159 @@
+name: Desktop Release
+
+# Triggers on version tags: v1.0.0, v1.2.3-beta, etc.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+  # Allow manual dispatch from the Actions UI
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag / version to build (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write   # needed to create GitHub Releases and upload assets
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Windows build — produces HashPilot-Setup-*.exe
+  # ──────────────────────────────────────────────────────────────────────────
+  build-windows:
+    name: 🪟 Windows Installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Python setup ──────────────────────────────────────────────────────
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies + PyInstaller
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      # ── PyInstaller ───────────────────────────────────────────────────────
+      - name: Bundle backend with PyInstaller
+        working-directory: backend
+        run: |
+          pyinstaller hashpilot_server.spec --noconfirm
+        continue-on-error: false
+
+      - name: Verify backend bundle exists
+        run: |
+          if (-not (Test-Path "backend/dist/hashpilot_server/hashpilot_server.exe")) {
+            Write-Error "PyInstaller failed — exe not found"
+            exit 1
+          }
+          Write-Host "✔ Backend bundled successfully"
+        shell: pwsh
+
+      # ── Node / Frontend ───────────────────────────────────────────────────
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build React frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Verify frontend build exists
+        run: |
+          if (-not (Test-Path "frontend/dist/index.html")) {
+            Write-Error "Vite build failed — index.html not found"
+            exit 1
+          }
+          Write-Host "✔ Frontend built successfully"
+        shell: pwsh
+
+      # ── Electron builder ──────────────────────────────────────────────────
+      - name: Install Electron dependencies
+        working-directory: desktop
+        run: npm ci
+
+      - name: Build Windows installer
+        working-directory: desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:win
+
+      - name: List build output
+        run: Get-ChildItem dist-desktop -Recurse -Filter "*.exe"
+        shell: pwsh
+
+      # ── Upload artifacts ──────────────────────────────────────────────────
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hashpilot-windows-installer
+          path: dist-desktop/*.exe
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Create GitHub Release and attach assets
+  # ──────────────────────────────────────────────────────────────────────────
+  release:
+    name: 📦 Create GitHub Release
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Windows installer
+        uses: actions/download-artifact@v4
+        with:
+          name: hashpilot-windows-installer
+          path: ./release-assets
+
+      - name: List release assets
+        run: ls -lh ./release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "HashPilot ${{ github.ref_name }}"
+          body: |
+            ## HashPilot ${{ github.ref_name }}
+
+            ### 📥 Download
+
+            | Platform | File | Notes |
+            |----------|------|-------|
+            | 🪟 Windows 10/11 (x64) | `HashPilot-Setup-*.exe` | NSIS installer |
+
+            ### 🚀 Installation (Windows)
+            1. Download `HashPilot-Setup-*.exe`
+            2. Run the installer — no admin required for per-user install
+            3. Launch **HashPilot** from your Desktop or Start Menu
+
+            ### ℹ️ Notes
+            - The app runs entirely **locally** — no internet required after install
+            - Your benchmark history is stored in `%APPDATA%\HashPilot\hashpilot.db`
+            - macOS and Linux support is coming in a future release
+
+            ---
+            **Full Changelog**: https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md
+          files: ./release-assets/*.exe
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -2,15 +2,11 @@ import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   BarChart3,
-  ChevronLeft,
-  ChevronRight,
   History,
   LayoutDashboard,
   Signal,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
-import { Badge } from "./ui/Badge";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -18,99 +14,87 @@ const navItems = [
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
-const itemVariants = {
-  hidden: { opacity: 0, x: -16 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: "easeOut" } },
-};
-
 export default function Sidebar() {
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <motion.aside
-      initial={{ opacity: 0, x: -18 }}
-      animate={{ opacity: 1, x: 0, width: collapsed ? 92 : 280 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="relative z-20 hidden min-h-screen shrink-0 border-r border-slate-200/70 bg-white/75 px-4 py-6 shadow-[20px_0_80px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[20px_0_80px_rgba(0,0,0,0.25)] lg:flex lg:flex-col"
+    <aside
+      style={{ width: 220, background: "var(--bg-surface)", borderRight: "1px solid var(--border)" }}
+      className="relative z-20 hidden min-h-screen shrink-0 flex-col py-5 px-3 lg:flex"
     >
-      <motion.div variants={itemVariants} className="mb-8 flex items-center gap-3 px-1">
-        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-cyan-400 to-indigo-500 shadow-[0_0_28px_rgba(34,211,238,0.35)]">
-          <div className="absolute inset-0 animate-shimmer bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.24)_50%,rgba(255,255,255,0)_100%)] bg-[length:200%_100%]" />
-          <Zap size={23} className="relative text-white" strokeWidth={2.5} />
+      {/* Logo */}
+      <div className="mb-8 flex items-center gap-3 px-2">
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+          style={{ background: "var(--accent)" }}
+        >
+          <Zap size={18} className="text-white" strokeWidth={2.5} />
         </div>
-
-        {!collapsed && (
-          <div className="min-w-0">
-            <div className="text-lg font-black leading-tight tracking-tight text-slate-950 dark:text-white">
-              HashPilot
-            </div>
-            <div className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              AI benchmark cloud
-            </div>
+        <div>
+          <div className="text-sm font-bold leading-tight" style={{ color: "var(--text-primary)" }}>
+            HashPilot
           </div>
-        )}
-      </motion.div>
+          <div className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>
+            v1.0.0
+          </div>
+        </div>
+      </div>
 
-      {!collapsed && (
-        <Badge variant="accent" dot className="mb-6 w-fit border-cyan-400/25 bg-cyan-400/10 px-3 py-1.5">
-          Enterprise Console
-        </Badge>
-      )}
-
-      <nav className="flex flex-1 flex-col gap-1.5">
+      {/* Navigation */}
+      <nav className="flex flex-1 flex-col gap-0.5">
         {navItems.map(({ to, label, icon: Icon }) => {
           const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
           return (
-            <motion.div key={to} variants={itemVariants}>
-              <NavLink to={to} className="outline-none" title={collapsed ? label : undefined}>
-                <motion.div
-                  whileHover={{ x: collapsed ? 0 : 3 }}
-                  className={`relative flex h-11 items-center gap-3 rounded-2xl px-3 text-sm font-semibold transition-all ${
-                    isActive
-                      ? "border border-cyan-400/25 bg-cyan-400/10 text-slate-950 shadow-[0_0_24px_rgba(34,211,238,0.12)] dark:text-white"
-                      : "border border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-400 dark:hover:border-white/10 dark:hover:bg-white/[0.04] dark:hover:text-slate-100"
-                  } ${collapsed ? "justify-center" : ""}`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNavPill"
-                      className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/10 to-indigo-400/10"
-                    />
-                  )}
-                  <Icon size={18} className={`relative shrink-0 ${isActive ? "text-cyan-500" : ""}`} />
-                  {!collapsed && <span className="relative">{label}</span>}
-                </motion.div>
-              </NavLink>
-            </motion.div>
+            <NavLink key={to} to={to} className="outline-none">
+              <motion.div
+                whileHover={{ x: 2 }}
+                transition={{ duration: 0.15 }}
+                className="relative flex h-9 items-center gap-2.5 rounded-[var(--radius-md)] px-3 text-sm font-medium transition-colors duration-150"
+                style={{
+                  background: isActive ? "var(--accent-dim)" : "transparent",
+                  color: isActive ? "var(--accent-hover)" : "var(--text-secondary)",
+                  border: isActive ? "1px solid rgba(59,130,246,0.25)" : "1px solid transparent",
+                }}
+              >
+                <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+                <span>{label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavPill"
+                    className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full"
+                    style={{ background: "var(--accent)" }}
+                  />
+                )}
+              </motion.div>
+            </NavLink>
           );
         })}
       </nav>
 
-      <div className="mt-6 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.04]">
-        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/10 text-emerald-400">
-            <Signal size={17} />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
+      {/* Engine status */}
+      <div
+        className="mt-4 rounded-[var(--radius-md)] p-3"
+        style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex h-7 w-7 items-center justify-center rounded-md" style={{ background: "var(--success-dim)" }}>
+            <Signal size={14} style={{ color: "var(--success)" }} />
+            <span
+              className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full animate-[dot-pulse_1.8s_ease-in-out_infinite]"
+              style={{ background: "var(--success)" }}
+            />
           </div>
-          {!collapsed && (
-            <div>
-              <div className="text-xs font-bold text-emerald-500">Engine Connected</div>
-              <div className="text-[11px] text-slate-500">WebSocket telemetry ready</div>
+          <div>
+            <div className="text-[11px] font-semibold" style={{ color: "var(--success)" }}>
+              Engine Ready
             </div>
-          )}
+            <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+              WebSocket connected
+            </div>
+          </div>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={() => setCollapsed((value) => !value)}
-        className="mt-4 flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white/70 text-slate-500 transition hover:text-slate-900 dark:border-white/10 dark:bg-white/[0.04] dark:hover:text-white"
-        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
-    </motion.aside>
+    </aside>
   );
 }
